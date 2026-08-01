@@ -1,0 +1,133 @@
+{
+  "project_name": "Matriel Studio",
+  "theme": "dark",
+  "color_palette": {
+    "background": "#050505",
+    "surface": "#121212",
+    "surface_elevated": "#1A1A1A",
+    "primary_accent": "#D4AF37",
+    "primary_accent_hover": "#F3C546",
+    "text_primary": "#F9F9F9",
+    "text_secondary": "#A3A3A3",
+    "border": "rgba(255, 255, 255, 0.1)",
+    "glass_bg": "rgba(5, 5, 5, 0.7)"
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Clash Display, sans-serif",
+      "accent": "Cormorant Garamond, serif",
+      "body": "Manrope, sans-serif"
+    },
+    "rules": {
+      "h1": "text-5xl md:text-7xl lg:text-8xl tracking-tighter leading-[0.9]",
+      "h2": "text-4xl md:text-6xl tracking-tight leading-none",
+      "h3": "text-2xl md:text-3xl tracking-tight",
+      "body": "text-base md:text-lg leading-relaxed text-text_secondary",
+      "overline": "text-xs md:text-sm uppercase tracking-[0.2em] text-[#D4AF37]"
+    }
+  },
+  "layout_strategy": {
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "section_spacing": "py-24 md:py-40",
+    "grid": "grid-cols-1 md:grid-cols-12 gap-6 md:gap-12",
+    "bento_spacing": "p-8 md:p-12"
+  },
+  "motion_and_interactions": {
+    "smooth_scroll": "MANDATORY: Use Lenis for smooth momentum scrolling.",
+    "hero_reveal": "Masked line-by-line reveal using Framer Motion. Use overflow-hidden on text lines and animate y from '100%' to '0%' with easing: [0.76, 0, 0.24, 1].",
+    "parallax": "Use Framer Motion useScroll and useTransform for subtle y-axis parallax on the hero image and portfolio thumbnails.",
+    "hover_states": "Buttons and cards should scale down slightly (scale: 0.98) on click. Hovering cards should subtly illuminate the border to rgba(212, 175, 55, 0.5)."
+  },
+  "sections_blueprint": {
+    "header": {
+      "layout": "Fixed top, glassmorphism (backdrop-blur-xl bg-black/60) with 1px bottom border border-white/10.",
+      "content": "Typographic logo 'MATRIEL STUDIO' in Clash Display. 3-4 nav links, primary CTA 'Orçamento'."
+    },
+    "hero": {
+      "layout": "Min-height 100vh, flex column, center aligned content but heavily left-aligned text within a wide container. Huge negative space.",
+      "content": "H1: 'Transformamos negócios locais em marcas' + italic accent 'digitais' in Cormorant Garamond. Subtitle about Matriel Studio. Primary Gold CTA 'Solicitar orçamento', Secondary Outline CTA 'Ver nossos serviços'.",
+      "visuals": "Floating 3D-like laptop/smartphone mockup, slightly tilted, moving with gentle scroll parallax."
+    },
+    "marquee": {
+      "layout": "Full width, overflowing, no vertical padding, border top/bottom.",
+      "content": "Text 'SUA EMPRESA MERECE UMA PRESENÇA DIGITAL PROFISSIONAL' moving infinitely.",
+      "style": "Massive text (text-8xl), outline only (text-transparent, stroke: 1px rgba(255,255,255,0.2)). Use framer-motion or react-fast-marquee."
+    },
+    "sobre": {
+      "layout": "12-col grid. 4 cols for sticky 'Sobre Nós' label, 8 cols for large manifesto narrative.",
+      "content": "Story of Matriel Studio. Highlighting values: Profissionalismo, Criatividade, Resultado, Proximidade."
+    },
+    "servicos": {
+      "layout": "Bento Grid or 2x2 grid.",
+      "content": "4 Services: Criação de Sites, Sites para Lojas e Mercados, Landing Pages, Manutenção.",
+      "style": "Cards must be dark surface, sharp or max 8px radius, subtle 1px border. Iconography should be elegant and minimal."
+    },
+    "como_funciona": {
+      "layout": "Vertical list with massive numbers acting as structural anchors.",
+      "content": "4 Numbered steps (01, 02, 03, 04).",
+      "style": "Numbers in Cormorant Garamond, very large, colored in subtle gold or white/10. Minimalist descriptions."
+    },
+    "beneficios": {
+      "layout": "Dark high-contrast section. Text-centric.",
+      "content": "Title: 'Por que sua empresa precisa de um site?'. Focus on local business conversion."
+    },
+    "portfolio": {
+      "layout": "Offset grid or horizontal scrolling section.",
+      "content": "4 Projects: Supermercado, Loja de Roupas, Restaurante, Empresa de Serviços.",
+      "style": "Real product photography treated with spotlight/clipped frames. Inner border on images to make them feel like premium physical prints."
+    },
+    "depoimentos": {
+      "layout": "Masonry or simple slider.",
+      "content": "Testimonials from local merchants. Use large hanging quote marks in Gold."
+    },
+    "contato": {
+      "layout": "Massive footer presence, py-32.",
+      "content": "H2 'VAMOS CONVERSAR', WhatsApp Form that redirects to WhatsApp API, location Itaobim-MG.",
+      "style": "Button should be a massive pill or block, styled elegantly in Gold with a white WhatsApp icon."
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid rgba(255, 255, 255, 0.1) on most cards to separate from pure black background.",
+    "textures": "Include a subtle static noise overlay (opacity 0.03) over the entire app via a fixed pointer-events-none div to kill digital flatness.",
+    "shadows": "Minimal use of shadows since it's dark mode. Rely on border contrast and background lightness variations."
+  },
+  "image_urls": {
+    "hero_mockup": {
+      "url": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Minimalist laptop mockup in dark setting for Hero parallax"
+    },
+    "portfolio_supermercado": {
+      "url": "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Modern grocery store aisle for supermarket portfolio"
+    },
+    "portfolio_restaurante": {
+      "url": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Modern luxury restaurant interior for portfolio"
+    },
+    "portfolio_loja": {
+      "url": "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Minimalist clothing boutique interior for portfolio"
+    }
+  },
+  "universal_guidelines_for_main_agent": [
+    "NEVER use generic AI aesthetics (vibrant purple/blue gradients, centered floating blobs, default Inter/Roboto fonts for headings).",
+    "Execute an Awwwards-level 'Editorial Dark' theme: high contrast, sharp or slightly rounded corners (max 8px), large elegant typography, and massive negative space.",
+    "Add 'data-testid' to all buttons, links, and forms for automated testing.",
+    "Use standard HTML + Tailwind for structural layouts to allow deep customization, avoiding Shadcn layout wrappers unless necessary for complex interactivity.",
+    "Implement Lenis for smooth scrolling in the main layout file.",
+    "Use framer-motion for the kinetic hero load (line-by-line reveal) and scroll-triggered animations.",
+    "Include a static noise/grain texture overlaid globally with pointer-events-none.",
+    "Ensure all text against dark backgrounds passes WCAG AA or APCA standards.",
+    "All copy MUST be in Portuguese BR as requested.",
+    "All components should be in .js/.jsx (no TypeScript per user environment)."
+  ],
+  "accessibility": {
+    "contrast": "Ensure text opacity is never below 60% on dark backgrounds to maintain readability.",
+    "aria": "Include aria-labels for the marquee and abstract visual elements."
+  },
+  "component_instructions": {
+    "buttons": "Pill-shaped (rounded-full) or crisp rectangles. Primary: background Gold, text Black, font-bold, tracking-wide. Hover: subtle scale down and brightness increase.",
+    "marquee": "Use framer-motion to create the infinite scroll text. Must be slow-moving.",
+    "portfolio_cards": "Wrap images in a container with overflow-hidden, apply scale transform on image hover, and apply a subtle inner shadow to the container."
+  }
+}

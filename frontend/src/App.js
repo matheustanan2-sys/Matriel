@@ -1,56 +1,120 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import Lenis from "lenis";
+import { motion, AnimatePresence } from "framer-motion";
+import { Toaster } from "@/components/ui/sonner";
+import Header from "@/components/site/Header";
+import Hero from "@/components/site/Hero";
+import EditorialMarquee from "@/components/site/EditorialMarquee";
+import Sobre from "@/components/site/Sobre";
+import Servicos from "@/components/site/Servicos";
+import ComoFunciona from "@/components/site/ComoFunciona";
+import Beneficios from "@/components/site/Beneficios";
+import Portfolio from "@/components/site/Portfolio";
+import Depoimentos from "@/components/site/Depoimentos";
+import Contato from "@/components/site/Contato";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
+function Preloader({ done }) {
   return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
+    <AnimatePresence>
+      {!done && (
+        <motion.div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-ink"
+          exit={{ y: "-100%" }}
+          transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+          data-testid="preloader"
         >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+          <div className="overflow-hidden">
+            <motion.div
+              initial={{ y: "110%" }}
+              animate={{ y: "0%" }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-baseline gap-2"
+            >
+              <span className="font-heading text-3xl md:text-4xl font-semibold tracking-tight text-bone">
+                Matriel
+              </span>
+              <span className="font-accent italic text-3xl md:text-4xl text-gold">Studio</span>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
-export default App;
+export default function App() {
+  const lenisRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+    lenisRef.current = lenis;
+    let rafId;
+    const raf = (time) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
+
+    // Kick off hero reveal right away so content is ready behind the intro.
+    setStarted(true);
+
+    // Robustly dismiss the intro: whichever signal comes first.
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      setLoaded(true);
+    };
+    const timers = [];
+    timers.push(setTimeout(finish, 1200));
+    if (document.readyState === "complete") timers.push(setTimeout(finish, 800));
+    window.addEventListener("load", finish);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => timers.push(setTimeout(finish, 400)));
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      window.removeEventListener("load", finish);
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  const handleNav = useCallback((href) => {
+    if (href === "#top") {
+      lenisRef.current?.scrollTo(0);
+      return;
+    }
+    const el = document.querySelector(href);
+    if (el) lenisRef.current?.scrollTo(el, { offset: -60 });
+  }, []);
+
+  return (
+    <div className="App relative">
+      <div className="grain-overlay" aria-hidden="true" />
+      <Preloader done={loaded} />
+      <Toaster position="top-center" theme="dark" richColors />
+
+      <Header onNav={handleNav} />
+      <main>
+        <Hero started={started} onNav={handleNav} />
+        <EditorialMarquee />
+        <Sobre />
+        <Servicos />
+        <ComoFunciona />
+        <Beneficios />
+        <Portfolio />
+        <Depoimentos />
+        <Contato />
+      </main>
+    </div>
+  );
+}

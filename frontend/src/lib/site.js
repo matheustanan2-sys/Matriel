@@ -21,8 +21,6 @@ export const NAV = [
 export const HOURS = "Seg a Sex · 8h às 18h";
 
 export const STATS = [
-  { value: "+120", label: "Projetos entregues" },
-  { value: "+80", label: "Clientes atendidos" },
   { value: "4.9", label: "Avaliação média" },
   { value: "48h", label: "Primeira entrega" },
 ];

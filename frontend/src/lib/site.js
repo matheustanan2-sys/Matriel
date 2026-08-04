@@ -1,6 +1,6 @@
 // Central brand + content data for Matriel Studio
 
-export const WHATSAPP_NUMBER = "553399988211"; // 33 99988-211
+export const WHATSAPP_NUMBER = "5533999888211"; // +55 33 99988-8211
 export const INSTAGRAM = "matriel.studio";
 export const EMAIL = "contato@matrielstudio.com.br";
 export const LOCATION = "Itaobim - MG";
@@ -11,11 +11,42 @@ export function waLink(message) {
 }
 
 export const NAV = [
-  { label: "Sobre", href: "#sobre" },
   { label: "Serviços", href: "#servicos" },
-  { label: "Processo", href: "#processo" },
   { label: "Portfólio", href: "#portfolio" },
+  { label: "Resultados", href: "#prova" },
+  { label: "Oferta", href: "#oferta" },
   { label: "Contato", href: "#contato" },
+];
+
+export const HOURS = "Seg a Sex · 8h às 18h";
+
+export const STATS = [
+  { value: "+120", label: "Projetos entregues" },
+  { value: "+80", label: "Clientes atendidos" },
+  { value: "4.9", label: "Avaliação média" },
+  { value: "48h", label: "Primeira entrega" },
+];
+
+export const CLIENTS = [
+  "Mercado Central", "Ateliê Vitrine", "Sabor & Casa",
+  "Clínica Bem Viver", "Auto Peças Vale", "Padaria Trigo Dourado",
+];
+
+export const OFFER = {
+  tag: "Oferta de lançamento",
+  title: "Os primeiros 5 clientes garantem condições exclusivas",
+  perks: [
+    "20% de desconto no seu projeto",
+    "Atendimento prioritário e dedicado",
+    "Entrega acelerada em até 7 dias",
+  ],
+  note: "Vagas limitadas — condição válida apenas para os próximos contratos.",
+};
+
+export const WHATS_MSGS = [
+  { name: "Rafael · Mercado Central", text: "O site ficou incrível! Já recebemos pedidos pelo WhatsApp no mesmo dia 🙌", time: "09:42" },
+  { name: "Juliana · Ateliê Vitrine", text: "Minhas clientes elogiaram muito. Ficou com a nossa cara mesmo ❤️", time: "14:18" },
+  { name: "Marcos · Sabor & Casa", text: "O cardápio online facilitou demais as reservas. Recomendo!", time: "20:05" },
 ];
 
 export const VALUES = [
@@ -28,27 +59,35 @@ export const VALUES = [
 export const SERVICES = [
   {
     num: "01",
+    icon: "Globe",
     title: "Criação de Sites Profissionais",
-    text: "Sites modernos e rápidos para apresentar sua empresa com autoridade e credibilidade.",
-    tags: ["Institucional", "Responsivo", "SEO básico"],
+    text: "Site moderno que apresenta sua empresa com autoridade.",
+    benefit: "Mais credibilidade e confiança logo no primeiro clique.",
+    tags: ["Institucional", "Responsivo", "SEO"],
   },
   {
     num: "02",
+    icon: "ShoppingBag",
     title: "Sites para Lojas e Mercados",
-    text: "Catálogo de produtos, promoções e contato rápido — tudo pronto para vender.",
+    text: "Catálogo de produtos, promoções e contato rápido.",
+    benefit: "Seus produtos vendendo 24h, direto no WhatsApp.",
     tags: ["Catálogo", "Promoções", "WhatsApp"],
   },
   {
     num: "03",
+    icon: "Target",
     title: "Landing Pages de Venda",
-    text: "Páginas focadas em conversão, criadas para transformar visitantes em clientes.",
-    tags: ["Conversão", "Campanhas", "Alta velocidade"],
+    text: "Páginas focadas em transformar visitantes em clientes.",
+    benefit: "Mais orçamentos e contatos vindos das suas campanhas.",
+    tags: ["Conversão", "Campanhas", "Rápida"],
   },
   {
     num: "04",
-    title: "Manutenção e Atualizações",
-    text: "Alterações, melhorias e suporte contínuo para o seu site nunca parar no tempo.",
-    tags: ["Suporte", "Melhorias", "Segurança"],
+    icon: "Wrench",
+    title: "Manutenção e Suporte",
+    text: "Alterações, melhorias e acompanhamento contínuo.",
+    benefit: "Seu site sempre atualizado, seguro e no ar.",
+    tags: ["Suporte", "Segurança", "Melhorias"],
   },
 ];
 
@@ -60,36 +99,43 @@ export const STEPS = [
 ];
 
 export const BENEFITS = [
-  "Mais confiança para os seus clientes",
-  "Aparecer no Google quando procurarem por você",
-  "Mostrar produtos e serviços 24 horas por dia",
-  "Facilitar pedidos direto pelo WhatsApp",
-  "Passar uma imagem profissional e consolidada",
+  { icon: "Zap", metric: "-90%", title: "Sites rápidos", text: "Carregamento otimizado que não faz o cliente esperar." },
+  { icon: "Smartphone", metric: "100%", title: "Responsivo", text: "Perfeito no celular, tablet e computador." },
+  { icon: "ShieldCheck", metric: "SSL", title: "Segurança reforçada", text: "Certificado e proteção de dados inclusos." },
+  { icon: "MessageCircle", metric: "1-clique", title: "Integração WhatsApp", text: "O cliente fala com você em um toque." },
+  { icon: "Search", metric: "Top Google", title: "SEO otimizado", text: "Sua empresa encontrada por quem procura." },
+  { icon: "LayoutDashboard", metric: "Fácil", title: "Painel administrativo", text: "Você mesmo atualiza textos e fotos." },
+  { icon: "Server", metric: "99.9%", title: "Hospedagem estável", text: "Seu site no ar o tempo todo, sem quedas." },
+  { icon: "Gauge", metric: "A+", title: "Performance otimizada", text: "Nota alta em velocidade e experiência." },
 ];
 
 export const PORTFOLIO = [
   {
     tag: "Supermercado",
     title: "Mercado Central",
-    text: "Catálogo digital com ofertas da semana e pedidos pelo WhatsApp.",
+    objetivo: "Vender e receber pedidos online",
+    resultado: "+40% de pedidos pelo WhatsApp",
     img: "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
   {
     tag: "Loja de Roupas",
     title: "Ateliê Vitrine",
-    text: "Vitrine online elegante com coleções e botão de compra rápida.",
+    objetivo: "Mostrar coleções e atrair clientes",
+    resultado: "2x mais visitas na loja física",
     img: "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
   },
   {
     tag: "Restaurante",
     title: "Sabor & Casa",
-    text: "Cardápio digital, reservas e localização integrada em um só lugar.",
+    objetivo: "Cardápio digital e reservas",
+    resultado: "+60% de reservas online",
     img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
   {
     tag: "Empresa de Serviços",
     title: "Clínica Bem Viver",
-    text: "Site institucional com agendamento e apresentação da equipe.",
+    objetivo: "Agendamentos e autoridade",
+    resultado: "+35% de agendamentos pela web",
     img: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
 ];

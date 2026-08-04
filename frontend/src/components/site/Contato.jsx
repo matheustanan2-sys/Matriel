@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { MessageCircle, Instagram, MapPin, ArrowUpRight } from "lucide-react";
+import { MessageCircle, Instagram, MapPin, ArrowUpRight, Clock } from "lucide-react";
 import { Reveal } from "./motion";
 import {
   Select,
@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { waLink, INSTAGRAM, LOCATION, EMAIL } from "../../lib/site";
+import { waLink, INSTAGRAM, LOCATION, EMAIL, HOURS, NAV } from "../../lib/site";
 import { Logo } from "./Header";
 
 const SEGMENTS = [
@@ -75,7 +75,7 @@ export default function Contato() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 group-hover:border-gold transition-colors duration-300">
                   <MessageCircle size={18} />
                 </span>
-                <span>WhatsApp · (33) 9998-8211</span>
+                <span>WhatsApp · (33) 99988-8211</span>
               </a>
               <a
                 href={`https://instagram.com/${INSTAGRAM}`}
@@ -94,6 +94,12 @@ export default function Contato() {
                   <MapPin size={18} />
                 </span>
                 <span>{LOCATION}</span>
+              </div>
+              <div className="flex items-center gap-4 text-bone">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15">
+                  <Clock size={18} />
+                </span>
+                <span>{HOURS}</span>
               </div>
             </div>
           </div>
@@ -175,14 +181,62 @@ export default function Contato() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-24 md:mt-40 border-t border-white/10 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo />
-          <p className="text-sm text-ash text-center">
-            © {new Date().getFullYear()} Matriel Studio · Sites profissionais em {LOCATION}
-          </p>
-          <a href={`mailto:${EMAIL}`} className="text-sm text-ash hover:text-gold transition-colors">
-            {EMAIL}
-          </a>
+        <footer className="mt-24 md:mt-40 border-t border-white/10 pt-14 pb-10" data-testid="site-footer">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+            <div className="md:col-span-5">
+              <Logo />
+              <p className="mt-5 max-w-sm text-ash leading-relaxed">
+                Agência de criação de sites profissionais para empresas, lojas e
+                comércios de Itaobim e região.
+              </p>
+              <a
+                href={waLink("Olá! Quero falar com um especialista da Matriel Studio.")}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="footer-whatsapp-cta"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-ink hover:bg-gold-hover transition-colors duration-300"
+              >
+                <MessageCircle size={16} /> Falar com um especialista
+              </a>
+            </div>
+
+            <div className="md:col-span-3">
+              <p className="text-xs uppercase tracking-[0.2em] text-gold mb-5">Navegação</p>
+              <ul className="space-y-3">
+                {NAV.map((n) => (
+                  <li key={n.href}>
+                    <a href={n.href} className="text-ash hover:text-bone transition-colors duration-300">
+                      {n.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="md:col-span-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-gold mb-5">Contato</p>
+              <ul className="space-y-3 text-ash">
+                <li className="flex items-center gap-3">
+                  <MessageCircle size={16} className="text-gold" /> (33) 99988-8211
+                </li>
+                <li>
+                  <a href={`https://instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-bone transition-colors">
+                    <Instagram size={16} className="text-gold" /> @{INSTAGRAM}
+                  </a>
+                </li>
+                <li>
+                  <a href={`mailto:${EMAIL}`} className="hover:text-bone transition-colors">{EMAIL}</a>
+                </li>
+                <li className="flex items-center gap-3"><MapPin size={16} className="text-gold" /> {LOCATION}</li>
+                <li className="flex items-center gap-3"><Clock size={16} className="text-gold" /> {HOURS}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-ash">© {new Date().getFullYear()} Matriel Studio. Todos os direitos reservados.</p>
+            <p className="text-sm text-ash">Feito com cuidado em {LOCATION}</p>
+          </div>
         </footer>
       </div>
     </section>

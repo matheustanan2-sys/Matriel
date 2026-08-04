@@ -34,7 +34,16 @@ function PortfolioCard({ item, index }) {
             <h3 className="mt-2 font-heading text-2xl md:text-3xl tracking-tight text-bone">{item.title}</h3>
           </div>
         </div>
-        <p className="mt-3 text-ash leading-relaxed max-w-md">{item.text}</p>
+        <div className="mt-4 space-y-2 border-t border-white/10 pt-4 max-w-md">
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="text-xs uppercase tracking-wide text-ash">Objetivo</span>
+            <span className="text-sm text-bone/90 text-right">{item.objetivo}</span>
+          </div>
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="text-xs uppercase tracking-wide text-ash">Resultado</span>
+            <span className="text-sm font-semibold text-gold text-right">{item.resultado}</span>
+          </div>
+        </div>
       </div>
     </Reveal>
   );

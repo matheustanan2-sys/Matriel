@@ -37,7 +37,7 @@ export default function Hero({ started, onNav }) {
           <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[0.95] text-bone">
             <MaskedLines
               start={started}
-              lines={["Transformamos", "negócios locais em"]}
+              lines={["Criamos o site que", "faz sua empresa"]}
             />
             <span className="reveal-line">
               <motion.span
@@ -46,7 +46,7 @@ export default function Hero({ started, onNav }) {
                 animate={started ? { y: "0%" } : {}}
                 transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1], delay: 0.24 }}
               >
-                marcas <span className="font-accent italic font-normal text-gold">digitais</span>
+                <span className="font-accent italic font-normal text-gold">vender mais</span>
               </motion.span>
             </span>
           </h1>
@@ -58,8 +58,8 @@ export default function Hero({ started, onNav }) {
             className="mt-8 max-w-xl text-base md:text-lg text-ash leading-relaxed"
             data-testid="hero-subtitle"
           >
-            A Matriel Studio cria sites profissionais para empresas de Itaobim que
-            querem atrair mais clientes e vender mais pela internet.
+            Sites profissionais, rápidos e integrados ao WhatsApp — feitos para
+            empresas de Itaobim atraírem clientes e venderem todos os dias.
           </motion.p>
 
           <motion.div
@@ -75,15 +75,15 @@ export default function Hero({ started, onNav }) {
               data-testid="hero-primary-cta"
               className="group inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-4 font-semibold text-ink transition-all duration-300 hover:bg-gold-hover active:scale-[0.98]"
             >
-              Solicitar orçamento
+              Falar no WhatsApp
               <ArrowUpRight size={18} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
             <button
-              onClick={() => onNav?.("#servicos")}
+              onClick={() => onNav?.("#portfolio")}
               data-testid="hero-secondary-cta"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-4 font-medium text-bone transition-all duration-300 hover:border-gold hover:text-gold active:scale-[0.98]"
             >
-              Ver nossos serviços
+              Ver portfólio
             </button>
           </motion.div>
         </motion.div>

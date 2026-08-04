@@ -1,6 +1,8 @@
 import { Reveal } from "./motion";
-import { Check } from "lucide-react";
+import { Zap, Smartphone, ShieldCheck, MessageCircle, Search, LayoutDashboard, Server, Gauge } from "lucide-react";
 import { BENEFITS, waLink } from "../../lib/site";
+
+const ICONS = { Zap, Smartphone, ShieldCheck, MessageCircle, Search, LayoutDashboard, Server, Gauge };
 
 export default function Beneficios() {
   return (
@@ -35,17 +37,23 @@ export default function Beneficios() {
         </div>
 
         <div className="lg:col-span-7 lg:col-start-6">
-          <div className="space-y-px bg-white/10 border border-white/10 rounded-lg overflow-hidden">
-            {BENEFITS.map((b, i) => (
-              <Reveal key={b} delay={i * 0.07} className="bg-ink">
-                <div className="group flex items-center gap-5 p-6 md:p-8 transition-colors duration-500 hover:bg-elevated">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/40 text-gold transition-colors duration-500 group-hover:bg-gold group-hover:text-ink">
-                    <Check size={18} />
-                  </span>
-                  <span className="text-lg text-bone/90">{b}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {BENEFITS.map((b, i) => {
+              const Icon = ICONS[b.icon] || Zap;
+              return (
+              <Reveal key={b.title} delay={(i % 2) * 0.06}>
+                <div className="group h-full rounded-lg border border-white/10 bg-ink p-6 transition-all duration-500 hover:border-gold/40 hover:-translate-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-gold transition-colors duration-500 group-hover:bg-gold group-hover:text-ink">
+                      <Icon size={18} />
+                    </span>
+                    <span className="font-heading text-lg text-gold">{b.metric}</span>
+                  </div>
+                  <h3 className="mt-5 font-heading text-lg tracking-tight text-bone">{b.title}</h3>
+                  <p className="mt-1.5 text-sm text-ash leading-relaxed">{b.text}</p>
                 </div>
               </Reveal>
-            ))}
+            );})}
           </div>
         </div>
       </div>

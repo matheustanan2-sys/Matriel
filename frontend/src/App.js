@@ -13,6 +13,9 @@ import Beneficios from "@/components/site/Beneficios";
 import Portfolio from "@/components/site/Portfolio";
 import Depoimentos from "@/components/site/Depoimentos";
 import Contato from "@/components/site/Contato";
+import ProvaSocial from "@/components/site/ProvaSocial";
+import OfertaEspecial from "@/components/site/OfertaEspecial";
+import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 
 function Preloader({ done }) {
   return (
@@ -104,15 +107,18 @@ export default function App() {
       <Toaster position="top-center" theme="dark" richColors />
 
       <Header onNav={handleNav} />
+      <FloatingWhatsApp />
       <main>
         <Hero started={started} onNav={handleNav} />
         <EditorialMarquee />
         <Sobre />
         <Servicos />
-        <ComoFunciona />
         <Beneficios />
+        <OfertaEspecial />
         <Portfolio />
+        <ProvaSocial />
         <Depoimentos />
+        <ComoFunciona />
         <Contato />
       </main>
     </div>

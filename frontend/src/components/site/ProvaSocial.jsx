@@ -1,6 +1,6 @@
 import { Reveal } from "./motion";
 import { Star, Check } from "lucide-react";
-import { STATS, CLIENTS, WHATS_MSGS } from "../../lib/site";
+import { STATS, WHATS_MSGS } from "../../lib/site";
 
 export default function ProvaSocial() {
   return (
@@ -57,22 +57,6 @@ export default function ProvaSocial() {
             ))}
           </div>
         </div>
-
-        {/* Client logos */}
-        <Reveal delay={0.1}>
-          <div className="mt-20 border-t border-white/10 pt-10">
-            <p className="text-center text-xs uppercase tracking-[0.28em] text-ash mb-8">
-              Empresas atendidas
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-              {CLIENTS.map((c) => (
-                <span key={c} className="font-heading text-lg md:text-xl text-bone/40 hover:text-bone/80 transition-colors duration-300">
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-        </Reveal>
       </div>
     </section>
   );

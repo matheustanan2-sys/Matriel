@@ -11,7 +11,6 @@ import Servicos from "@/components/site/Servicos";
 import ComoFunciona from "@/components/site/ComoFunciona";
 import Beneficios from "@/components/site/Beneficios";
 import Portfolio from "@/components/site/Portfolio";
-import Depoimentos from "@/components/site/Depoimentos";
 import Contato from "@/components/site/Contato";
 import ProvaSocial from "@/components/site/ProvaSocial";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
@@ -117,7 +116,6 @@ export default function App() {
         <OfertaEspecial />
         <Portfolio />
         <ProvaSocial />
-        <Depoimentos />
         <ComoFunciona />
         <Contato />
       </main>

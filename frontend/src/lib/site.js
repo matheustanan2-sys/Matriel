@@ -1,7 +1,7 @@
 // Central brand + content data for Matriel Studio
 
 export const WHATSAPP_NUMBER = "5533999888211"; // +55 33 99988-8211
-export const INSTAGRAM = "matriel.studio";
+export const INSTAGRAM = "matrielstudio";
 export const EMAIL = "contato@matrielstudio.com.br";
 export const LOCATION = "Itaobim - MG";
 

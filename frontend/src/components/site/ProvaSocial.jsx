@@ -1,22 +1,11 @@
 import { Reveal } from "./motion";
 import { Star, Check } from "lucide-react";
-import { STATS, WHATS_MSGS } from "../../lib/site";
+import { WHATS_MSGS } from "../../lib/site";
 
 export default function ProvaSocial() {
   return (
     <section id="prova" className="py-24 md:py-40 scroll-mt-20" data-testid="prova-section">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 border border-white/10 rounded-lg overflow-hidden mb-20">
-          {STATS.map((s, i) => (
-            <Reveal key={s.label} delay={i * 0.06} className="bg-ink">
-              <div className="p-8 text-center">
-                <p className="font-heading text-4xl md:text-5xl text-gold">{s.value}</p>
-                <p className="mt-2 text-sm text-ash">{s.label}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-4">

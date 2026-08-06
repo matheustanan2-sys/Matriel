@@ -10,11 +10,9 @@ import Sobre from "@/components/site/Sobre";
 import Servicos from "@/components/site/Servicos";
 import ComoFunciona from "@/components/site/ComoFunciona";
 import Beneficios from "@/components/site/Beneficios";
-import Portfolio from "@/components/site/Portfolio";
-import Contato from "@/components/site/Contato";
-import ProvaSocial from "@/components/site/ProvaSocial";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
+import Contato from "@/components/site/Contato";
 
 function Preloader({ done }) {
   return (
@@ -114,8 +112,6 @@ export default function App() {
         <Servicos />
         <Beneficios />
         <OfertaEspecial />
-        <Portfolio />
-        <ProvaSocial />
         <ComoFunciona />
         <Contato />
       </main>

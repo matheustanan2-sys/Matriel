@@ -55,8 +55,16 @@ export default function App() {
 
   // Subscribe to auth state changes
   useEffect(() => {
+    const localEmail = localStorage.getItem("matriel_admin_email");
+    const localToken = localStorage.getItem("matriel_admin_token");
+    if (localEmail && localToken) {
+      setUser({ email: localEmail, uid: "mock-uid-123" });
+    }
+
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -113,6 +121,8 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await logoutAdmin();
+      localStorage.removeItem("matriel_admin_token");
+      localStorage.removeItem("matriel_admin_email");
       setUser(null);
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
@@ -148,6 +158,7 @@ export default function App() {
       <LoginModal 
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
+        onMockLogin={(mockUser) => setUser(mockUser)}
       />
     </div>
   );

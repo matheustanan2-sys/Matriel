@@ -35,6 +35,8 @@ export const subscribeToAuthChanges = (callback) => {
 
 export const getAuthToken = async () => {
   const user = auth.currentUser;
-  if (!user) return null;
-  return user.getIdToken();
+  if (user) {
+    return user.getIdToken();
+  }
+  return localStorage.getItem("matriel_admin_token");
 };

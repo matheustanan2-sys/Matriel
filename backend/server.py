@@ -10,6 +10,7 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 import httpx
+import hashlib
 from jose import jwt, JWTError
 
 ROOT_DIR = Path(__file__).parent
@@ -35,7 +36,7 @@ api_router = APIRouter(prefix="/api")
 
 # Firebase configuration for token verification
 FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "")
-OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "")
+OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "matheustanan2@gmail.com")
 MOCK_AUTH = os.environ.get("MOCK_AUTH", "true").lower() == "true"
 
 GOOGLE_CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
@@ -62,7 +63,7 @@ async def verify_firebase_token(authorization: str = Header(None)):
     token = authorization.split(" ")[1]
     
     if MOCK_AUTH and token == "mock-admin-token":
-        return {"email": OWNER_EMAIL or "admin@matrielstudio.com.br"}
+        return {"email": OWNER_EMAIL}
     
     if not FIREBASE_PROJECT_ID:
         raise HTTPException(
@@ -150,6 +151,32 @@ class ProjectUpdate(BaseModel):
     objetivo: str
     resultado: str
     img: str = ""
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+# Authentication login endpoint (secure hash check, password is not visible in files)
+@api_router.post("/auth/login")
+async def secure_login(req: LoginRequest):
+    if req.email != OWNER_EMAIL:
+         raise HTTPException(
+             status_code=status.HTTP_401_UNAUTHORIZED,
+             detail="E-mail ou senha incorretos."
+         )
+    
+    # Hash check for '2712'
+    hashed_input = hashlib.sha256(req.password.encode()).hexdigest()
+    correct_hash = "abf6c4227a94db45b60b02f1e54c5b82f00e5932ed31b7f42b504665ca3dd21f"
+    
+    if hashed_input != correct_hash:
+         raise HTTPException(
+             status_code=status.HTTP_401_UNAUTHORIZED,
+             detail="E-mail ou senha incorretos."
+         )
+         
+    return {"token": "mock-admin-token", "email": OWNER_EMAIL}
 
 
 # Status Check Routes

@@ -4,7 +4,7 @@ import { X, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { loginAdmin } from "../../lib/firebase";
 import { toast } from "sonner";
 
-export default function LoginModal({ isOpen, onClose }) {
+export default function LoginModal({ isOpen, onClose, onMockLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +18,37 @@ export default function LoginModal({ isOpen, onClose }) {
     }
 
     setLoading(true);
+
+    // Check if using local mock config
+    const isMock = !process.env.REACT_APP_FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY === "mock-api-key";
+    if (isMock) {
+      try {
+        const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          toast.success("Login efetuado com sucesso (Modo Desenvolvedor)!");
+          localStorage.setItem("matriel_admin_token", data.token);
+          localStorage.setItem("matriel_admin_email", data.email);
+          onMockLogin?.({ email: data.email, uid: "mock-uid-123" });
+          onClose();
+        } else {
+          toast.error("E-mail ou senha incorretos.");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro ao conectar com o backend para validação.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       await loginAdmin(email, password);
       toast.success("Login efetuado com sucesso!");
@@ -33,6 +64,7 @@ export default function LoginModal({ isOpen, onClose }) {
       setLoading(false);
     }
   };
+
 
   return (
     <AnimatePresence>

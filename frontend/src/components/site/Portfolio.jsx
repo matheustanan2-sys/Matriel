@@ -7,7 +7,7 @@ import { X, Plus, Image as ImageIcon, Edit, Trash2, Loader2 } from "lucide-react
 import { getAuthToken } from "../../lib/firebase";
 
 // API Endpoint configuration
-const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
+const API_URL = process.env.REACT_APP_API_URL || (window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
 
 // Predefined high-quality default images for portfolio categories
 const DEFAULT_IMAGES = [
@@ -231,20 +231,10 @@ export default function Portfolio({ user }) {
       };
 
       let res;
-      if (editingProject && !editingProject._isDefault) {
+      if (editingProject) {
         // Editar projeto real no backend
         res = await fetch(`${API_URL}/projects/${editingProject.id}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${authToken}`
-          },
-          body: JSON.stringify(projectData)
-        });
-      } else if (editingProject && editingProject._isDefault) {
-        // Editar projeto padrão: transforma em projeto real criando no backend
-        res = await fetch(`${API_URL}/projects`, {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${authToken}`
@@ -264,7 +254,6 @@ export default function Portfolio({ user }) {
       }
 
       if (res.ok) {
-        const savedProject = await res.json();
         toast.success(editingProject ? "Projeto atualizado com sucesso!" : "Projeto cadastrado com sucesso!");
         setIsOpen(false);
         clearCache();
@@ -288,17 +277,6 @@ export default function Portfolio({ user }) {
 
   const handleDelete = async (item) => {
     if (!window.confirm("Tem certeza que deseja excluir este projeto do portfólio?")) return;
-
-    // Projeto padrão (sem backend) — remove apenas localmente
-    if (item._isDefault) {
-      setProjects((prev) => {
-        const updated = prev.filter((p) => p.id !== item.id);
-        setCache(updated);
-        return updated;
-      });
-      toast.success("Projeto removido do portfólio.");
-      return;
-    }
 
     // Projeto real — remove no backend
     try {

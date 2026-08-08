@@ -1,42 +1,59 @@
-import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
-} from "firebase/auth";
+// Authentication helper functions using the backend API instead of Firebase Auth
 
-// Firebase configuration using environment variables (React App standard)
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "mock-api-key",
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "mock-auth-domain.firebaseapp.com",
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "mock-project-id",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "mock-storage-bucket.appspot.com",
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "mock-sender-id",
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || "mock-app-id"
+let authCallbacks = [];
+
+// Helper to notify listeners of auth changes
+const notifyAuthChange = (user) => {
+  authCallbacks.forEach(cb => cb(user));
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-
-// Authentication helper functions
-export const loginAdmin = (email, password) => {
-  return signInWithEmailAndPassword(auth, email, password);
+export const loginAdmin = async (email, password) => {
+  const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
+  const url = process.env.REACT_APP_API_URL || API_URL;
+  
+  const res = await fetch(`${url}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  
+  if (!res.ok) {
+    throw new Error("E-mail ou senha incorretos.");
+  }
+  
+  const data = await res.json();
+  localStorage.setItem("matriel_admin_token", data.token);
+  localStorage.setItem("matriel_admin_email", data.email);
+  
+  const user = { email: data.email, uid: "admin-uid" };
+  notifyAuthChange(user);
+  return user;
 };
 
-export const logoutAdmin = () => {
-  return signOut(auth);
+export const logoutAdmin = async () => {
+  localStorage.removeItem("matriel_admin_token");
+  localStorage.removeItem("matriel_admin_email");
+  notifyAuthChange(null);
 };
 
 export const subscribeToAuthChanges = (callback) => {
-  return onAuthStateChanged(auth, callback);
+  authCallbacks.push(callback);
+  
+  // Call immediately with current state
+  const localEmail = localStorage.getItem("matriel_admin_email");
+  const localToken = localStorage.getItem("matriel_admin_token");
+  if (localEmail && localToken) {
+    callback({ email: localEmail, uid: "admin-uid" });
+  } else {
+    callback(null);
+  }
+  
+  return () => {
+    authCallbacks = authCallbacks.filter(cb => cb !== callback);
+  };
 };
 
 export const getAuthToken = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    return user.getIdToken();
-  }
   return localStorage.getItem("matriel_admin_token");
 };
+

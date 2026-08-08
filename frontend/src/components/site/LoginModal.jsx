@@ -19,47 +19,13 @@ export default function LoginModal({ isOpen, onClose, onMockLogin }) {
 
     setLoading(true);
 
-    // Check if using local mock config
-    const isMock = !process.env.REACT_APP_FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY === "mock-api-key";
-    if (isMock) {
-      try {
-        const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
-        const res = await fetch(`${API_URL}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          toast.success("Login efetuado com sucesso (Modo Desenvolvedor)!");
-          localStorage.setItem("matriel_admin_token", data.token);
-          localStorage.setItem("matriel_admin_email", data.email);
-          onMockLogin?.({ email: data.email, uid: "mock-uid-123" });
-          onClose();
-        } else {
-          toast.error("E-mail ou senha incorretos.");
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("Erro ao conectar com o backend para validação.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
     try {
       await loginAdmin(email, password);
       toast.success("Login efetuado com sucesso!");
       onClose();
     } catch (error) {
       console.error(error);
-      let errorMsg = "Erro ao fazer login. Verifique as credenciais.";
-      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
-        errorMsg = "Email ou senha incorretos.";
-      }
-      toast.error(errorMsg);
+      toast.error(error.message || "Erro ao fazer login. Verifique as credenciais.");
     } finally {
       setLoading(false);
     }

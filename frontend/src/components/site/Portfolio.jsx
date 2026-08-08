@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Reveal } from "./motion";
 import { PORTFOLIO as DEFAULT_PORTFOLIO } from "../../lib/site";
@@ -16,6 +16,41 @@ const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=compress&cs=tinysrgb&w=800&q=80", // Store
   "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=compress&cs=tinysrgb&w=800&q=80", // Restaurant
 ];
+
+// Garante que projetos padrão tenham um id local (não persistido no banco)
+const DEFAULT_WITH_IDS = DEFAULT_PORTFOLIO.map((p, i) => ({
+  ...p,
+  id: p.id || `default-${i}`,
+  _isDefault: true,
+}));
+
+const CACHE_KEY = "matriel_portfolio_cache";
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+function getCache() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp < CACHE_TTL_MS) return data;
+    sessionStorage.removeItem(CACHE_KEY);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function setCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {}
+}
+
+function clearCache() {
+  try {
+    sessionStorage.removeItem(CACHE_KEY);
+  } catch {}
+}
 
 function PortfolioCard({ item, index, isAdmin, onEdit, onDelete }) {
   const ref = useRef(null);
@@ -44,7 +79,7 @@ function PortfolioCard({ item, index, isAdmin, onEdit, onDelete }) {
                 <Edit size={16} />
               </button>
               <button
-                onClick={() => onDelete(item.id)}
+                onClick={() => onDelete(item)}
                 className="p-2 rounded-full bg-surface/90 border border-white/10 text-bone hover:text-red-400 hover:border-red-400/50 transition-all shadow-lg backdrop-blur-sm"
                 title="Excluir Projeto"
               >
@@ -98,29 +133,59 @@ export default function Portfolio({ user }) {
     img: ""
   });
 
-  // Fetch projects from backend
-  const fetchProjects = async () => {
+  // Fetch projects from backend com timeout e cache
+  const fetchProjects = useCallback(async ({ bustCache = false } = {}) => {
+    if (!bustCache) {
+      const cached = getCache();
+      if (cached) {
+        setProjects(cached);
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
     try {
-      const res = await fetch(`${API_URL}/projects`);
+      const res = await fetch(`${API_URL}/projects`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const data = await res.json();
-        // If empty, fall back to DEFAULT_PORTFOLIO
-        setProjects(data.length > 0 ? data : DEFAULT_PORTFOLIO);
+        const finalData = data.length > 0 ? data : DEFAULT_WITH_IDS;
+        setProjects(finalData);
+        setCache(finalData);
       } else {
-        setProjects(DEFAULT_PORTFOLIO);
+        setProjects(DEFAULT_WITH_IDS);
+        setCache(DEFAULT_WITH_IDS);
       }
     } catch (e) {
-      console.error("Erro ao carregar projetos do backend, usando padrão:", e);
-      setProjects(DEFAULT_PORTFOLIO);
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") {
+        console.warn("Timeout ao carregar portfólio, usando dados padrão.");
+      } else {
+        console.error("Erro ao carregar projetos:", e);
+      }
+      // Usa cache expirado se disponível, senão defaults
+      try {
+        const raw = sessionStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const { data } = JSON.parse(raw);
+          setProjects(data);
+          return;
+        }
+      } catch {}
+      setProjects(DEFAULT_WITH_IDS);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -155,7 +220,6 @@ export default function Portfolio({ user }) {
     setSubmitLoading(true);
     try {
       const token = await getAuthToken();
-      // If we don't have a real Firebase project configured, use standard mock-token in dev environment
       const authToken = token || "mock-admin-token";
 
       const projectData = {
@@ -167,8 +231,8 @@ export default function Portfolio({ user }) {
       };
 
       let res;
-      if (editingProject) {
-        // Edit existing project
+      if (editingProject && !editingProject._isDefault) {
+        // Editar projeto real no backend
         res = await fetch(`${API_URL}/projects/${editingProject.id}`, {
           method: "PUT",
           headers: {
@@ -177,8 +241,18 @@ export default function Portfolio({ user }) {
           },
           body: JSON.stringify(projectData)
         });
+      } else if (editingProject && editingProject._isDefault) {
+        // Editar projeto padrão: transforma em projeto real criando no backend
+        res = await fetch(`${API_URL}/projects`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify(projectData)
+        });
       } else {
-        // Create new project
+        // Criar novo projeto
         res = await fetch(`${API_URL}/projects`, {
           method: "POST",
           headers: {
@@ -193,20 +267,16 @@ export default function Portfolio({ user }) {
         const savedProject = await res.json();
         toast.success(editingProject ? "Projeto atualizado com sucesso!" : "Projeto cadastrado com sucesso!");
         setIsOpen(false);
-        if (editingProject) {
-          // Atualiza projeto existente no estado local
-          setProjects((prev) => prev.map((p) => p.id === savedProject.id ? savedProject : p));
-        } else {
-          // Adiciona novo projeto ao estado local
-          setProjects((prev) => {
-            // Se eram dados padrão (sem id), substitui por lista com apenas o novo projeto
-            const hasRealProjects = prev.some((p) => p.id);
-            return hasRealProjects ? [...prev, savedProject] : [savedProject];
-          });
-        }
+        clearCache();
+        // Recarrega do servidor para garantir dados atualizados
+        await fetchProjects({ bustCache: true });
       } else {
-        const errorData = await res.json();
-        toast.error(errorData.detail || "Erro ao salvar o projeto. Verifique suas permissões.");
+        let errorDetail = "Erro ao salvar o projeto. Verifique suas permissões.";
+        try {
+          const errorData = await res.json();
+          errorDetail = errorData.detail || errorDetail;
+        } catch {}
+        toast.error(errorDetail);
       }
     } catch (err) {
       console.error(err);
@@ -216,20 +286,26 @@ export default function Portfolio({ user }) {
     }
   };
 
-  const handleDelete = async (projectId) => {
-    // Itens padrão (DEFAULT_PORTFOLIO) não têm id — não são gerenciáveis pelo backend
-    if (!projectId) {
-      toast.error("Este projeto padrão não pode ser removido. Adicione projetos personalizados primeiro.");
+  const handleDelete = async (item) => {
+    if (!window.confirm("Tem certeza que deseja excluir este projeto do portfólio?")) return;
+
+    // Projeto padrão (sem backend) — remove apenas localmente
+    if (item._isDefault) {
+      setProjects((prev) => {
+        const updated = prev.filter((p) => p.id !== item.id);
+        setCache(updated);
+        return updated;
+      });
+      toast.success("Projeto removido do portfólio.");
       return;
     }
 
-    if (!window.confirm("Tem certeza que deseja excluir este projeto do portfólio?")) return;
-
+    // Projeto real — remove no backend
     try {
       const token = await getAuthToken();
       const authToken = token || "mock-admin-token";
 
-      const res = await fetch(`${API_URL}/projects/${projectId}`, {
+      const res = await fetch(`${API_URL}/projects/${item.id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${authToken}`
@@ -238,11 +314,19 @@ export default function Portfolio({ user }) {
 
       if (res.ok) {
         toast.success("Projeto removido com sucesso!");
-        // Atualiza estado local sem precisar recarregar tudo do servidor
-        setProjects((prev) => prev.filter((p) => p.id !== projectId));
+        clearCache();
+        setProjects((prev) => {
+          const updated = prev.filter((p) => p.id !== item.id);
+          setCache(updated);
+          return updated;
+        });
       } else {
-        const errorData = await res.json().catch(() => ({}));
-        toast.error(errorData.detail || "Erro ao excluir projeto.");
+        let errorDetail = "Erro ao excluir projeto.";
+        try {
+          const errorData = await res.json();
+          errorDetail = errorData.detail || errorDetail;
+        } catch {}
+        toast.error(errorDetail);
       }
     } catch (err) {
       console.error(err);

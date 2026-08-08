@@ -3,7 +3,11 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { Reveal } from "./motion";
 import { PORTFOLIO as DEFAULT_PORTFOLIO } from "../../lib/site";
 import { toast } from "sonner";
-import { X, Plus, Image as ImageIcon } from "lucide-react";
+import { X, Plus, Image as ImageIcon, Edit, Trash2, Loader2 } from "lucide-react";
+import { getAuthToken } from "../../lib/firebase";
+
+// API Endpoint configuration
+const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
 
 // Predefined high-quality default images for portfolio categories
 const DEFAULT_IMAGES = [
@@ -13,7 +17,7 @@ const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=compress&cs=tinysrgb&w=800&q=80", // Restaurant
 ];
 
-function PortfolioCard({ item, index }) {
+function PortfolioCard({ item, index, isAdmin, onEdit, onDelete }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
@@ -22,12 +26,33 @@ function PortfolioCard({ item, index }) {
     <Reveal delay={(index % 2) * 0.1}>
       <div
         ref={ref}
-        className={`group ${index % 2 === 1 ? "md:mt-24" : ""}`}
+        className={`group ${index % 2 === 1 ? "md:mt-24" : ""} relative`}
         data-testid={`portfolio-card-${index}`}
       >
         <div className="relative overflow-hidden rounded-lg border border-white/10">
           <div className="absolute inset-0 z-10 ring-1 ring-inset ring-white/10 rounded-lg pointer-events-none" />
           <div className="absolute inset-0 z-[5] bg-ink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Admin Quick Actions Overlay */}
+          {isAdmin && (
+            <div className="absolute top-4 right-4 z-20 flex gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="p-2 rounded-full bg-surface/90 border border-white/10 text-bone hover:text-gold hover:border-gold/50 transition-all shadow-lg backdrop-blur-sm"
+                title="Editar Projeto"
+              >
+                <Edit size={16} />
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="p-2 rounded-full bg-surface/90 border border-white/10 text-bone hover:text-red-400 hover:border-red-400/50 transition-all shadow-lg backdrop-blur-sm"
+                title="Excluir Projeto"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          )}
+
           <div className="overflow-hidden">
             <motion.img
               src={item.img || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]}
@@ -59,9 +84,12 @@ function PortfolioCard({ item, index }) {
   );
 }
 
-export default function Portfolio() {
+export default function Portfolio({ user }) {
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     tag: "",
@@ -70,18 +98,28 @@ export default function Portfolio() {
     img: ""
   });
 
-  // Load projects from localStorage, fallback to DEFAULT_PORTFOLIO
-  useEffect(() => {
-    const saved = localStorage.getItem("matriel_portfolio");
-    if (saved) {
-      try {
-        setProjects(JSON.parse(saved));
-      } catch (e) {
+  // Fetch projects from backend
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/projects`);
+      if (res.ok) {
+        const data = await res.json();
+        // If empty, fall back to DEFAULT_PORTFOLIO
+        setProjects(data.length > 0 ? data : DEFAULT_PORTFOLIO);
+      } else {
         setProjects(DEFAULT_PORTFOLIO);
       }
-    } else {
+    } catch (e) {
+      console.error("Erro ao carregar projetos do backend, usando padrão:", e);
       setProjects(DEFAULT_PORTFOLIO);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchProjects();
   }, []);
 
   const handleInputChange = (e) => {
@@ -89,32 +127,109 @@ export default function Portfolio() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleOpenCreateModal = () => {
+    setEditingProject(null);
+    setFormData({ title: "", tag: "", objetivo: "", resultado: "", img: "" });
+    setIsOpen(true);
+  };
+
+  const handleOpenEditModal = (project) => {
+    setEditingProject(project);
+    setFormData({
+      title: project.title,
+      tag: project.tag,
+      objetivo: project.objetivo,
+      resultado: project.resultado,
+      img: project.img || ""
+    });
+    setIsOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.tag || !formData.objetivo || !formData.resultado) {
       toast.error("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-    // fallback to a random high-quality default image if none provided
-    const imgUrl = formData.img.trim() || DEFAULT_IMAGES[projects.length % DEFAULT_IMAGES.length];
-    
-    const newProject = {
-      title: formData.title,
-      tag: formData.tag,
-      objetivo: formData.objetivo,
-      resultado: formData.resultado,
-      img: imgUrl
-    };
+    setSubmitLoading(true);
+    try {
+      const token = await getAuthToken();
+      // If we don't have a real Firebase project configured, use standard mock-token in dev environment
+      const authToken = token || "mock-admin-token";
 
-    const updatedProjects = [...projects, newProject];
-    setProjects(updatedProjects);
-    localStorage.setItem("matriel_portfolio", JSON.stringify(updatedProjects));
-    
-    // Reset and close
-    setFormData({ title: "", tag: "", objetivo: "", resultado: "", img: "" });
-    setIsOpen(false);
-    toast.success("Projeto cadastrado com sucesso!");
+      const projectData = {
+        title: formData.title,
+        tag: formData.tag,
+        objetivo: formData.objetivo,
+        resultado: formData.resultado,
+        img: formData.img.trim() || DEFAULT_IMAGES[projects.length % DEFAULT_IMAGES.length]
+      };
+
+      let res;
+      if (editingProject) {
+        // Edit existing project
+        res = await fetch(`${API_URL}/projects/${editingProject.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify(projectData)
+        });
+      } else {
+        // Create new project
+        res = await fetch(`${API_URL}/projects`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify(projectData)
+        });
+      }
+
+      if (res.ok) {
+        toast.success(editingProject ? "Projeto atualizado com sucesso!" : "Projeto cadastrado com sucesso!");
+        setIsOpen(false);
+        fetchProjects();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.detail || "Erro ao salvar o projeto. Verifique suas permissões.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro de conexão ao salvar projeto.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    if (!window.confirm("Tem certeza que deseja excluir este projeto do portfólio?")) return;
+
+    try {
+      const token = await getAuthToken();
+      const authToken = token || "mock-admin-token";
+
+      const res = await fetch(`${API_URL}/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${authToken}`
+        }
+      });
+
+      if (res.ok) {
+        toast.success("Projeto removido com sucesso!");
+        fetchProjects();
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.detail || "Erro ao excluir projeto.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao conectar ao servidor para exclusão.");
+    }
   };
 
   return (
@@ -137,27 +252,43 @@ export default function Portfolio() {
                 Exemplos do tipo de resultado que entregamos para diferentes segmentos do comércio local.
               </p>
             </Reveal>
-            <Reveal delay={0.2}>
-              <button
-                onClick={() => setIsOpen(true)}
-                className="group flex items-center gap-2 rounded-full border border-gold/40 px-6 py-3 text-sm font-semibold text-gold hover:bg-gold hover:text-ink transition-all duration-300 active:scale-95"
-                data-testid="add-project-button"
-              >
-                <Plus size={16} className="transition-transform group-hover:rotate-90" />
-                Adicionar Projeto
-              </button>
-            </Reveal>
+            {user && (
+              <Reveal delay={0.2}>
+                <button
+                  onClick={handleOpenCreateModal}
+                  className="group flex items-center gap-2 rounded-full border border-gold/40 px-6 py-3 text-sm font-semibold text-gold hover:bg-gold hover:text-ink transition-all duration-300 active:scale-95"
+                  data-testid="add-project-button"
+                >
+                  <Plus size={16} className="transition-transform group-hover:rotate-90" />
+                  Adicionar Projeto
+                </button>
+              </Reveal>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
-          {projects.map((item, i) => (
-            <PortfolioCard key={`${item.title}-${i}`} item={item} index={i} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-ash">
+            <Loader2 className="animate-spin text-gold" size={32} />
+            <p className="text-sm">Carregando portfólio...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
+            {projects.map((item, i) => (
+              <PortfolioCard
+                key={item.id || `${item.title}-${i}`}
+                item={item}
+                index={i}
+                isAdmin={!!user}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Modern, Elegant Registration Modal */}
+      {/* Modern, Elegant Registration / Edit Modal */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -182,7 +313,8 @@ export default function Portfolio() {
               <div className="px-8 pt-8 pb-4 flex items-center justify-between border-b border-white/5">
                 <div>
                   <h3 className="font-heading text-2xl font-semibold tracking-tight text-bone">
-                    Cadastrar <span className="font-accent italic text-gold">Novo Projeto</span>
+                    {editingProject ? "Editar" : "Cadastrar"}{" "}
+                    <span className="font-accent italic text-gold">Projeto</span>
                   </h3>
                   <p className="text-xs text-ash mt-1">Preencha as informações para listar o projeto no portfólio.</p>
                 </div>
@@ -287,9 +419,11 @@ export default function Portfolio() {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-full text-sm font-semibold bg-gold text-ink hover:bg-gold-hover transition-colors"
+                    disabled={submitLoading}
+                    className="px-6 py-2.5 rounded-full text-sm font-semibold bg-gold text-ink hover:bg-gold-hover transition-colors flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    Salvar Projeto
+                    {submitLoading && <Loader2 size={14} className="animate-spin" />}
+                    {editingProject ? "Salvar Alterações" : "Salvar Projeto"}
                   </button>
                 </div>
               </form>

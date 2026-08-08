@@ -14,6 +14,8 @@ import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 import Contato from "@/components/site/Contato";
 import Portfolio from "@/components/site/Portfolio";
+import LoginModal from "@/components/site/LoginModal";
+import { subscribeToAuthChanges, logoutAdmin } from "@/lib/firebase";
 
 function Preloader({ done }) {
   return (
@@ -48,6 +50,16 @@ export default function App() {
   const lenisRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [started, setStarted] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  // Subscribe to auth state changes
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -98,25 +110,45 @@ export default function App() {
     if (el) lenisRef.current?.scrollTo(el, { offset: -60 });
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await logoutAdmin();
+      setUser(null);
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
+
   return (
     <div className="App relative">
       <div className="grain-overlay" aria-hidden="true" />
       <Preloader done={loaded} />
       <Toaster position="top-center" theme="dark" richColors />
 
-      <Header onNav={handleNav} />
+      <Header 
+        onNav={handleNav} 
+        user={user} 
+        onLoginClick={() => setIsLoginOpen(true)} 
+        onLogoutClick={handleLogout} 
+      />
       <FloatingWhatsApp />
+      
       <main>
         <Hero started={started} onNav={handleNav} />
         <EditorialMarquee />
         <Sobre />
         <Servicos />
-        <Portfolio />
+        <Portfolio user={user} />
         <Beneficios />
         <OfertaEspecial />
         <ComoFunciona />
         <Contato />
       </main>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+      />
     </div>
   );
 }

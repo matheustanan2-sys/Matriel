@@ -190,9 +190,20 @@ export default function Portfolio({ user }) {
       }
 
       if (res.ok) {
+        const savedProject = await res.json();
         toast.success(editingProject ? "Projeto atualizado com sucesso!" : "Projeto cadastrado com sucesso!");
         setIsOpen(false);
-        fetchProjects();
+        if (editingProject) {
+          // Atualiza projeto existente no estado local
+          setProjects((prev) => prev.map((p) => p.id === savedProject.id ? savedProject : p));
+        } else {
+          // Adiciona novo projeto ao estado local
+          setProjects((prev) => {
+            // Se eram dados padrão (sem id), substitui por lista com apenas o novo projeto
+            const hasRealProjects = prev.some((p) => p.id);
+            return hasRealProjects ? [...prev, savedProject] : [savedProject];
+          });
+        }
       } else {
         const errorData = await res.json();
         toast.error(errorData.detail || "Erro ao salvar o projeto. Verifique suas permissões.");
@@ -206,6 +217,12 @@ export default function Portfolio({ user }) {
   };
 
   const handleDelete = async (projectId) => {
+    // Itens padrão (DEFAULT_PORTFOLIO) não têm id — não são gerenciáveis pelo backend
+    if (!projectId) {
+      toast.error("Este projeto padrão não pode ser removido. Adicione projetos personalizados primeiro.");
+      return;
+    }
+
     if (!window.confirm("Tem certeza que deseja excluir este projeto do portfólio?")) return;
 
     try {
@@ -221,9 +238,10 @@ export default function Portfolio({ user }) {
 
       if (res.ok) {
         toast.success("Projeto removido com sucesso!");
-        fetchProjects();
+        // Atualiza estado local sem precisar recarregar tudo do servidor
+        setProjects((prev) => prev.filter((p) => p.id !== projectId));
       } else {
-        const errorData = await res.json();
+        const errorData = await res.json().catch(() => ({}));
         toast.error(errorData.detail || "Erro ao excluir projeto.");
       }
     } catch (err) {
@@ -231,6 +249,7 @@ export default function Portfolio({ user }) {
       toast.error("Erro ao conectar ao servidor para exclusão.");
     }
   };
+
 
   return (
     <section id="portfolio" className="py-24 md:py-40 scroll-mt-20" data-testid="portfolio-section">

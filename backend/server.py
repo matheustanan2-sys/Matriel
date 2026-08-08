@@ -42,14 +42,21 @@ MOCK_AUTH = os.environ.get("MOCK_AUTH", "true").lower() == "true"
 
 GOOGLE_CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
 cached_certs = {}
+cached_certs_at: Optional[datetime] = None
+CERTS_CACHE_TTL_SECONDS = 3600  # Cache por 1 hora
 
 async def get_google_public_keys():
-    global cached_certs
+    global cached_certs, cached_certs_at
+    now = datetime.now(timezone.utc)
+    # Retorna cache se ainda válido
+    if cached_certs and cached_certs_at and (now - cached_certs_at).total_seconds() < CERTS_CACHE_TTL_SECONDS:
+        return cached_certs
     try:
         async with httpx.AsyncClient() as client_http:
             res = await client_http.get(GOOGLE_CERTS_URL)
             if res.status_code == 200:
                 cached_certs = res.json()
+                cached_certs_at = now
     except Exception as e:
         logger.error(f"Failed to fetch Google public certs: {e}")
     return cached_certs

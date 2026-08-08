@@ -13,6 +13,7 @@ import Beneficios from "@/components/site/Beneficios";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 import Contato from "@/components/site/Contato";
+import Portfolio from "@/components/site/Portfolio";
 
 function Preloader({ done }) {
   return (
@@ -110,6 +111,7 @@ export default function App() {
         <EditorialMarquee />
         <Sobre />
         <Servicos />
+        <Portfolio />
         <Beneficios />
         <OfertaEspecial />
         <ComoFunciona />

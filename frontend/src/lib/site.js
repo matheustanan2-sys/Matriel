@@ -12,6 +12,7 @@ export function waLink(message) {
 
 export const NAV = [
   { label: "Serviços", href: "#servicos" },
+  { label: "Portfólio", href: "#portfolio" },
   { label: "Oferta", href: "#oferta" },
   { label: "Contato", href: "#contato" },
 ];

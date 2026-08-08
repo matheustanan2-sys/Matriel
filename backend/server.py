@@ -9,9 +9,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
-import httpx
 import hashlib
-from jose import jwt, JWTError
+import hmac
+import base64
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -34,95 +34,69 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Firebase configuration for token verification
-FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "")
+# Auth configuration — sem dependência do Firebase
 OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "").strip() or "matheustanan2@gmail.com"
-MOCK_AUTH = os.environ.get("MOCK_AUTH", "true").lower() == "true"
+# Chave secreta para assinar tokens (pode ser definida no Vercel como variável de ambiente)
+# Se não definida, usa uma chave padrão embutida (adequado para projetos pessoais)
+SECRET_KEY = os.environ.get("SECRET_KEY", "matriel-studio-secret-2024-xK9p")
+SESSION_TOKEN_PREFIX = "matriel-session:"
 
+def _make_signature(payload: str) -> str:
+    """Gera assinatura HMAC-SHA256 do payload com a chave secreta."""
+    return hmac.new(
+        SECRET_KEY.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
 
-GOOGLE_CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
-cached_certs = {}
-cached_certs_at: Optional[datetime] = None
-CERTS_CACHE_TTL_SECONDS = 3600  # Cache por 1 hora
+def generate_session_token(email: str) -> str:
+    """Gera um token de sessão assinado com HMAC."""
+    payload = f"{SESSION_TOKEN_PREFIX}{email}"
+    sig = _make_signature(payload)
+    raw = f"{payload}:{sig}"
+    return base64.urlsafe_b64encode(raw.encode()).decode()
 
-async def get_google_public_keys():
-    global cached_certs, cached_certs_at
-    now = datetime.now(timezone.utc)
-    # Retorna cache se ainda válido
-    if cached_certs and cached_certs_at and (now - cached_certs_at).total_seconds() < CERTS_CACHE_TTL_SECONDS:
-        return cached_certs
+def verify_session_token(token: str) -> Optional[str]:
+    """Valida o token e retorna o email se válido, None caso contrário."""
     try:
-        async with httpx.AsyncClient() as client_http:
-            res = await client_http.get(GOOGLE_CERTS_URL)
-            if res.status_code == 200:
-                cached_certs = res.json()
-                cached_certs_at = now
-    except Exception as e:
-        logger.error(f"Failed to fetch Google public certs: {e}")
-    return cached_certs
+        raw = base64.urlsafe_b64decode(token.encode()).decode()
+        # Formato: "matriel-session:<email>:<signature>"
+        # O email pode conter '@' mas não ':', a assinatura é 64 chars hex
+        sig = raw[-64:]
+        payload = raw[:-65]  # -64 chars de sig, -1 do ':' separador
+        if not payload.startswith(SESSION_TOKEN_PREFIX):
+            return None
+        expected_sig = _make_signature(payload)
+        if not hmac.compare_digest(sig, expected_sig):
+            return None
+        email = payload[len(SESSION_TOKEN_PREFIX):]
+        return email
+    except Exception:
+        return None
 
-async def verify_firebase_token(authorization: str = Header(None)):
+def verify_firebase_token(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticação ausente ou inválido."
         )
-    
+
     token = authorization.split(" ")[1]
-    
-    if MOCK_AUTH and token == "mock-admin-token":
-        return {"email": OWNER_EMAIL}
-    
-    if not FIREBASE_PROJECT_ID:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Firebase Project ID não configurado no backend."
-        )
-        
-    try:
-        unverified_headers = jwt.get_unverified_header(token)
-        kid = unverified_headers.get("kid")
-        if not kid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Cabeçalho do token inválido (kid ausente)."
-            )
-            
-        certs = await get_google_public_keys()
-        cert = certs.get(kid)
-        if not cert:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Chave pública do Firebase expirada ou inválida."
-            )
-            
-        claims = jwt.decode(
-            token,
-            cert,
-            algorithms=["RS256"],
-            audience=FIREBASE_PROJECT_ID,
-            issuer=f"https://securetoken.google.com/{FIREBASE_PROJECT_ID}"
-        )
-        
-        email = claims.get("email")
-        if not email:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Email não encontrado no token."
-            )
-            
-        if OWNER_EMAIL and email != OWNER_EMAIL:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Acesso negado. Apenas o proprietário do site pode realizar esta ação."
-            )
-            
-        return claims
-    except JWTError as e:
+    email = verify_session_token(token)
+
+    if not email:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Token inválido ou expirado: {str(e)}"
+            detail="Token inválido ou expirado. Faça login novamente."
         )
+
+    if OWNER_EMAIL and email != OWNER_EMAIL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Apenas o proprietário do site pode realizar esta ação."
+        )
+
+    return {"email": email}
 
 
 # Define Models
@@ -173,18 +147,20 @@ async def secure_login(req: LoginRequest):
              status_code=status.HTTP_401_UNAUTHORIZED,
              detail="E-mail ou senha incorretos."
          )
-    
+
     # Hash check for '2712'
     hashed_input = hashlib.sha256(req.password.encode()).hexdigest()
     correct_hash = "abf6c4227a94db45b60b02f1e54c5b82f00e5932ed31b7f42b504665ca3dd21f"
-    
+
     if hashed_input != correct_hash:
          raise HTTPException(
              status_code=status.HTTP_401_UNAUTHORIZED,
              detail="E-mail ou senha incorretos."
          )
-         
-    return {"token": "mock-admin-token", "email": OWNER_EMAIL}
+
+    # Gera token de sessão assinado com HMAC (funciona em produção sem Firebase)
+    session_token = generate_session_token(req.email)
+    return {"token": session_token, "email": OWNER_EMAIL}
 
 
 # Status Check Routes

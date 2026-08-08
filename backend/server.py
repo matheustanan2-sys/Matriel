@@ -36,8 +36,9 @@ api_router = APIRouter(prefix="/api")
 
 # Firebase configuration for token verification
 FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "")
-OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "matheustanan2@gmail.com")
+OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "").strip() or "matheustanan2@gmail.com"
 MOCK_AUTH = os.environ.get("MOCK_AUTH", "true").lower() == "true"
+
 
 GOOGLE_CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
 cached_certs = {}
@@ -240,10 +241,19 @@ async def delete_project(project_id: str, claims: dict = Depends(verify_firebase
 # Include the router in the main app
 app.include_router(api_router)
 
+cors_origins = os.environ.get('CORS_ORIGINS', '').split(',')
+if not cors_origins or cors_origins == [''] or '*' in cors_origins:
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

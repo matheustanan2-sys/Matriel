@@ -7,7 +7,8 @@ import { X, Plus, Image as ImageIcon, Edit, Trash2, Loader2 } from "lucide-react
 import { getAuthToken } from "../../lib/firebase";
 
 // API Endpoint configuration
-const API_URL = process.env.REACT_APP_API_URL || (window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
+const envApiUrl = typeof process !== "undefined" && process.env ? process.env.REACT_APP_API_URL : undefined;
+const API_URL = envApiUrl || (window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
 
 // Predefined high-quality default images for portfolio categories
 const DEFAULT_IMAGES = [

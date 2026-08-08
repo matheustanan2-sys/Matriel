@@ -9,7 +9,8 @@ const notifyAuthChange = (user) => {
 
 export const loginAdmin = async (email, password) => {
   const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
-  const url = process.env.REACT_APP_API_URL || API_URL;
+  const envApiUrl = typeof process !== "undefined" && process.env ? process.env.REACT_APP_API_URL : undefined;
+  const url = envApiUrl || API_URL;
   
   const res = await fetch(`${url}/auth/login`, {
     method: "POST",

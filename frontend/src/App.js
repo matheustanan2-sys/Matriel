@@ -13,7 +13,6 @@ import Beneficios from "@/components/site/Beneficios";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 import Contato from "@/components/site/Contato";
-import Portfolio from "@/components/site/Portfolio";
 import LoginModal from "@/components/site/LoginModal";
 import { subscribeToAuthChanges, logoutAdmin } from "@/lib/firebase";
 
@@ -148,7 +147,6 @@ export default function App() {
         <EditorialMarquee />
         <Sobre />
         <Servicos />
-        <Portfolio user={user} />
         <Beneficios />
         <OfertaEspecial />
         <ComoFunciona />

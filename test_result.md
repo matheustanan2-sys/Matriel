@@ -101,3 +101,59 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+## user_problem_statement: "Aba Portfólio com cards (imagem, nome, categoria, descrição, link) + área Admin protegida por senha (adicionar/editar/excluir). Senha no backend com hash seguro, APIs protegidas, projetos salvos no banco (visíveis a todos). Design moderno, responsivo. Não alterar outras partes."
+
+## backend:
+##   - task: "Auth login com PBKDF2 + token HMAC"
+##     implemented: true
+##     working: "NA"
+##     file: "backend/server.py"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Login POST /api/auth/login valida email (matheustanan2@gmail.com) + senha (27122) via PBKDF2-HMAC-SHA256+salt. Retorna token HMAC."
+##   - task: "Projects CRUD com novos campos e proteção admin"
+##     implemented: true
+##     working: "NA"
+##     file: "backend/server.py"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Project agora tem title, category, description, link, image. GET /api/projects publico. POST/PUT/DELETE exigem Bearer token (require_admin). Migracao de docs antigos no startup."
+
+## frontend:
+##   - task: "Secao Portfolio renderizada + cards novos + admin CRUD"
+##     implemented: true
+##     working: "NA"
+##     file: "frontend/src/components/site/Portfolio.jsx, App.js"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: false
+##     status_history:
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Portfolio agora renderizado em App.js, NAV com link Portfolio. Card mostra imagem/categoria/nome/descricao + botao Ver projeto. Form admin usa novos campos."
+
+## metadata:
+##   created_by: "main_agent"
+##   version: "2.0"
+##   test_sequence: 0
+##   run_ui: false
+
+## test_plan:
+##   current_focus:
+##     - "Auth login com PBKDF2 + token HMAC"
+##     - "Projects CRUD com novos campos e proteção admin"
+##   stuck_tasks: []
+##   test_all: false
+##   test_priority: "high_first"
+
+## agent_communication:
+##     -agent: "main"
+##     -message: "Backend alterado: novos campos de projeto (category/description/link/image), login PBKDF2, migracao. Testar auth + CRUD protegido. Credenciais em /app/memory/test_credentials.md."

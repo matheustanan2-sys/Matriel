@@ -10,6 +10,7 @@ import Sobre from "@/components/site/Sobre";
 import Servicos from "@/components/site/Servicos";
 import ComoFunciona from "@/components/site/ComoFunciona";
 import Beneficios from "@/components/site/Beneficios";
+import Portfolio from "@/components/site/Portfolio";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 import Contato from "@/components/site/Contato";
@@ -148,6 +149,7 @@ export default function App() {
         <Sobre />
         <Servicos />
         <Beneficios />
+        <Portfolio user={user} />
         <OfertaEspecial />
         <ComoFunciona />
         <Contato />

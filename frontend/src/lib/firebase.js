@@ -8,9 +8,8 @@ const notifyAuthChange = (user) => {
 };
 
 export const loginAdmin = async (email, password) => {
-  const API_URL = window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api";
-  const envApiUrl = typeof process !== "undefined" && process.env ? process.env.REACT_APP_API_URL : undefined;
-  const url = envApiUrl || API_URL;
+  const backendUrl = (typeof process !== "undefined" && process.env && process.env.REACT_APP_BACKEND_URL) || "";
+  const url = backendUrl ? `${backendUrl}/api` : "/api";
   
   const res = await fetch(`${url}/auth/login`, {
     method: "POST",

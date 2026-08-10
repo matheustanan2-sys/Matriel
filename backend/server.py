@@ -64,6 +64,31 @@ OWNER_EMAIL = os.environ.get("OWNER_EMAIL", "").strip() or "matheustanan2@gmail.
 SECRET_KEY = os.environ.get("SECRET_KEY", "matriel-studio-secret-2024-xK9p")
 SESSION_TOKEN_PREFIX = "matriel-session:"
 
+# Senha do administrador guardada como hash seguro PBKDF2-HMAC-SHA256 + salt.
+# NUNCA guardamos a senha em texto plano nem no frontend. Os valores abaixo vêm
+# do backend/.env (salt e hash em hexadecimal). Fallback embutido para dev local.
+ADMIN_PASSWORD_SALT = os.environ.get(
+    "ADMIN_PASSWORD_SALT", "62517ac1d43e32a2182ab8fa0d19dfbd"
+)
+ADMIN_PASSWORD_HASH = os.environ.get(
+    "ADMIN_PASSWORD_HASH",
+    "8779412daf4b607381628e5bb0033e991af96ac14255ba615605c7775df3ba5f",
+)
+ADMIN_PBKDF2_ITERATIONS = int(os.environ.get("ADMIN_PBKDF2_ITERATIONS", "200000"))
+
+
+def verify_password(plain_password: str) -> bool:
+    """Verifica a senha usando PBKDF2-HMAC-SHA256 com salt e comparação
+    em tempo constante (resistente a timing attacks)."""
+    try:
+        salt = bytes.fromhex(ADMIN_PASSWORD_SALT)
+        dk = hashlib.pbkdf2_hmac(
+            "sha256", plain_password.encode(), salt, ADMIN_PBKDF2_ITERATIONS
+        )
+        return hmac.compare_digest(dk.hex(), ADMIN_PASSWORD_HASH)
+    except Exception:
+        return False
+
 
 def _make_signature(payload: str) -> str:
     """Gera assinatura HMAC-SHA256 do payload com a chave secreta."""
@@ -159,25 +184,25 @@ class Project(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
-    tag: str
-    objetivo: str
-    resultado: str
-    img: str = ""
+    title: str                       # nome do projeto
+    category: str = ""               # categoria
+    description: str = ""            # descrição
+    link: str = ""                   # link (URL do projeto)
+    image: str = ""                  # imagem (URL)
 
 class ProjectCreate(BaseModel):
     title: str
-    tag: str
-    objetivo: str
-    resultado: str
-    img: str = ""
+    category: str = ""
+    description: str = ""
+    link: str = ""
+    image: str = ""
 
 class ProjectUpdate(BaseModel):
     title: str
-    tag: str
-    objetivo: str
-    resultado: str
-    img: str = ""
+    category: str = ""
+    description: str = ""
+    link: str = ""
+    image: str = ""
 
 class LoginRequest(BaseModel):
     email: str
@@ -201,11 +226,8 @@ async def secure_login(req: LoginRequest):
             detail="E-mail ou senha incorretos.",
         )
 
-    # Verificação da senha via SHA-256 (hash de '2712')
-    hashed_input = hashlib.sha256(req.password.encode()).hexdigest()
-    correct_hash = "abf6c4227a94db45b60b02f1e54c5b82f00e5932ed31b7f42b504665ca3dd21f"
-
-    if not hmac.compare_digest(hashed_input, correct_hash):
+    # Verificação da senha via PBKDF2-HMAC-SHA256 + salt (hash seguro).
+    if not verify_password(req.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="E-mail ou senha incorretos.",
@@ -306,40 +328,55 @@ app.include_router(api_router)
 @app.on_event("startup")
 async def startup_event():
     try:
+        # ── Migração: projetos antigos (tag/objetivo/resultado/img) → novo schema ──
+        async for doc in db.projects.find({}):
+            updates = {}
+            if "category" not in doc:
+                updates["category"] = doc.get("tag", "Projeto")
+            if "description" not in doc:
+                updates["description"] = doc.get("objetivo") or doc.get("resultado") or ""
+            if "image" not in doc:
+                updates["image"] = doc.get("img", "")
+            if "link" not in doc:
+                updates["link"] = ""
+            if updates:
+                await db.projects.update_one({"id": doc["id"]}, {"$set": updates})
+
+        # ── Seed inicial (apenas se não houver nenhum projeto) ──
         count = await db.projects.count_documents({})
         if count == 0:
             default_projects = [
                 {
                     "id": str(uuid.uuid4()),
                     "title": "Mercado Central",
-                    "tag": "Supermercado",
-                    "objetivo": "Vender e receber pedidos online",
-                    "resultado": "+40% de pedidos pelo WhatsApp",
-                    "img": "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+                    "category": "Supermercado",
+                    "description": "Site com catálogo de produtos e pedidos online, focado em aumentar as vendas pelo WhatsApp.",
+                    "link": "https://wa.me/5533999888211",
+                    "image": "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "title": "Ateliê Vitrine",
-                    "tag": "Loja de Roupas",
-                    "objetivo": "Mostrar coleções e atrair clientes",
-                    "resultado": "2x mais visitas na loja física",
-                    "img": "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+                    "category": "Loja de Roupas",
+                    "description": "Vitrine digital elegante para mostrar coleções e atrair clientes para a loja física.",
+                    "link": "https://wa.me/5533999888211",
+                    "image": "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "title": "Sabor & Casa",
-                    "tag": "Restaurante",
-                    "objetivo": "Cardápio digital e reservas",
-                    "resultado": "+60% de reservas online",
-                    "img": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+                    "category": "Restaurante",
+                    "description": "Cardápio digital moderno com sistema de reservas online integrado.",
+                    "link": "https://wa.me/5533999888211",
+                    "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "title": "Clínica Bem Viver",
-                    "tag": "Empresa de Serviços",
-                    "objetivo": "Agendamentos e autoridade",
-                    "resultado": "+35% de agendamentos pela web",
-                    "img": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+                    "category": "Empresa de Serviços",
+                    "description": "Site institucional com agendamentos online para gerar autoridade e novos pacientes.",
+                    "link": "https://wa.me/5533999888211",
+                    "image": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
                 }
             ]
             await db.projects.insert_many(default_projects)

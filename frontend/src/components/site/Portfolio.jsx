@@ -3,12 +3,12 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { Reveal } from "./motion";
 import { PORTFOLIO as DEFAULT_PORTFOLIO } from "../../lib/site";
 import { toast } from "sonner";
-import { X, Plus, Image as ImageIcon, Edit, Trash2, Loader2 } from "lucide-react";
+import { X, Plus, Image as ImageIcon, Edit, Trash2, Loader2, ArrowUpRight, Link as LinkIcon } from "lucide-react";
 import { getAuthToken } from "../../lib/firebase";
 
 // API Endpoint configuration
-const envApiUrl = typeof process !== "undefined" && process.env ? process.env.REACT_APP_API_URL : undefined;
-const API_URL = envApiUrl || (window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
+const backendUrl = (typeof process !== "undefined" && process.env && process.env.REACT_APP_BACKEND_URL) || "";
+const API_URL = backendUrl ? `${backendUrl}/api` : "/api";
 
 // Predefined high-quality default images for portfolio categories
 const DEFAULT_IMAGES = [
@@ -91,30 +91,35 @@ function PortfolioCard({ item, index, isAdmin, onEdit, onDelete }) {
 
           <div className="overflow-hidden">
             <motion.img
-              src={item.img || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]}
-              alt={`Projeto ${item.title} — ${item.tag}`}
+              src={item.image || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]}
+              alt={`Projeto ${item.title} — ${item.category}`}
               style={{ y }}
               className="w-full h-[300px] md:h-[420px] object-cover scale-110 transition-transform duration-700 group-hover:scale-125"
               loading="lazy"
             />
           </div>
         </div>
-        <div className="mt-6 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-gold">{item.tag}</p>
-            <h3 className="mt-2 font-heading text-2xl md:text-3xl tracking-tight text-bone">{item.title}</h3>
-          </div>
+        <div className="mt-6">
+          <p className="text-xs uppercase tracking-[0.22em] text-gold">{item.category}</p>
+          <h3 className="mt-2 font-heading text-2xl md:text-3xl tracking-tight text-bone">{item.title}</h3>
         </div>
-        <div className="mt-4 space-y-2 border-t border-white/10 pt-4 max-w-md">
-          <div className="flex items-baseline justify-between gap-4">
-            <span className="text-xs uppercase tracking-wide text-ash">Objetivo</span>
-            <span className="text-sm text-bone/90 text-right">{item.objetivo}</span>
-          </div>
-          <div className="flex items-baseline justify-between gap-4">
-            <span className="text-xs uppercase tracking-wide text-ash">Resultado</span>
-            <span className="text-sm font-semibold text-gold text-right">{item.resultado}</span>
-          </div>
-        </div>
+        {item.description && (
+          <p className="mt-4 text-sm text-ash leading-relaxed max-w-md border-t border-white/10 pt-4">
+            {item.description}
+          </p>
+        )}
+        {item.link && (
+          <a
+            href={item.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-gold hover:gap-3 transition-all duration-300"
+            data-testid={`portfolio-link-${index}`}
+          >
+            Ver projeto
+            <ArrowUpRight size={16} />
+          </a>
+        )}
       </div>
     </Reveal>
   );
@@ -128,10 +133,10 @@ export default function Portfolio({ user }) {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
-    tag: "",
-    objetivo: "",
-    resultado: "",
-    img: ""
+    category: "",
+    description: "",
+    link: "",
+    image: ""
   });
 
   // Fetch projects from backend com timeout e cache
@@ -195,26 +200,26 @@ export default function Portfolio({ user }) {
 
   const handleOpenCreateModal = () => {
     setEditingProject(null);
-    setFormData({ title: "", tag: "", objetivo: "", resultado: "", img: "" });
+    setFormData({ title: "", category: "", description: "", link: "", image: "" });
     setIsOpen(true);
   };
 
   const handleOpenEditModal = (project) => {
     setEditingProject(project);
     setFormData({
-      title: project.title,
-      tag: project.tag,
-      objetivo: project.objetivo,
-      resultado: project.resultado,
-      img: project.img || ""
+      title: project.title || "",
+      category: project.category || "",
+      description: project.description || "",
+      link: project.link || "",
+      image: project.image || ""
     });
     setIsOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.tag || !formData.objetivo || !formData.resultado) {
-      toast.error("Por favor, preencha todos os campos obrigatórios.");
+    if (!formData.title || !formData.category || !formData.description) {
+      toast.error("Por favor, preencha nome, categoria e descrição.");
       return;
     }
 
@@ -225,10 +230,10 @@ export default function Portfolio({ user }) {
 
       const projectData = {
         title: formData.title,
-        tag: formData.tag,
-        objetivo: formData.objetivo,
-        resultado: formData.resultado,
-        img: formData.img.trim() || DEFAULT_IMAGES[projects.length % DEFAULT_IMAGES.length]
+        category: formData.category,
+        description: formData.description,
+        link: formData.link.trim(),
+        image: formData.image.trim() || DEFAULT_IMAGES[projects.length % DEFAULT_IMAGES.length]
       };
 
       let res;
@@ -426,50 +431,51 @@ export default function Portfolio({ user }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-ash mb-2 font-semibold">
-                      Categoria / Tag <span className="text-gold">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="tag"
-                      required
-                      value={formData.tag}
-                      onChange={handleInputChange}
-                      placeholder="Ex: Supermercado"
-                      className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-ash mb-2 font-semibold">
-                      Resultado Obtido <span className="text-gold">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="resultado"
-                      required
-                      value={formData.resultado}
-                      onChange={handleInputChange}
-                      placeholder="Ex: +40% de vendas"
-                      className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-ash mb-2 font-semibold">
+                    Categoria <span className="text-gold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    required
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    placeholder="Ex: Supermercado"
+                    className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-ash mb-2 font-semibold">
-                    Objetivo do Projeto <span className="text-gold">*</span>
+                    Descrição <span className="text-gold">*</span>
                   </label>
-                  <input
-                    type="text"
-                    name="objetivo"
+                  <textarea
+                    name="description"
                     required
-                    value={formData.objetivo}
+                    rows={3}
+                    value={formData.description}
                     onChange={handleInputChange}
-                    placeholder="Ex: Vender e receber pedidos online"
-                    className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"
+                    placeholder="Descreva o projeto em poucas linhas..."
+                    className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors resize-none"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-ash mb-2 font-semibold">
+                    Link do Projeto <span className="text-ash/60">(opcional)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      name="link"
+                      value={formData.link}
+                      onChange={handleInputChange}
+                      placeholder="https://site-do-cliente.com.br"
+                      className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 pl-10 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"
+                    />
+                    <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash/40" />
+                  </div>
                 </div>
 
                 <div>
@@ -479,8 +485,8 @@ export default function Portfolio({ user }) {
                   <div className="relative">
                     <input
                       type="url"
-                      name="img"
-                      value={formData.img}
+                      name="image"
+                      value={formData.image}
                       onChange={handleInputChange}
                       placeholder="https://images.unsplash.com/..."
                       className="w-full bg-ink/40 border border-white/10 rounded-lg p-3 pl-10 text-bone text-sm placeholder:text-ash/40 focus:outline-none focus:border-gold/50 transition-colors"

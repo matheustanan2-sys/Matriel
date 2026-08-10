@@ -12,6 +12,7 @@ export function waLink(message) {
 
 export const NAV = [
   { label: "Serviços", href: "#servicos" },
+  { label: "Portfólio", href: "#portfolio" },
   { label: "Oferta", href: "#oferta" },
   { label: "Contato", href: "#contato" },
 ];
@@ -107,32 +108,32 @@ export const BENEFITS = [
 
 export const PORTFOLIO = [
   {
-    tag: "Supermercado",
+    category: "Supermercado",
     title: "Mercado Central",
-    objetivo: "Vender e receber pedidos online",
-    resultado: "+40% de pedidos pelo WhatsApp",
-    img: "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+    description: "Site com catálogo de produtos e pedidos online, focado em aumentar as vendas pelo WhatsApp.",
+    link: "https://wa.me/5533999888211",
+    image: "https://images.unsplash.com/photo-1760463921642-eef64776c3bf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHByb2R1Y2UlMjBtb2Rlcm4lMjBncm9jZXJ5JTIwc3RvcmV8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
   {
-    tag: "Loja de Roupas",
+    category: "Loja de Roupas",
     title: "Ateliê Vitrine",
-    objetivo: "Mostrar coleções e atrair clientes",
-    resultado: "2x mais visitas na loja física",
-    img: "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    description: "Vitrine digital elegante para mostrar coleções e atrair clientes para a loja física.",
+    link: "https://wa.me/5533999888211",
+    image: "https://images.pexels.com/photos/5531709/pexels-photo-5531709.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
   },
   {
-    tag: "Restaurante",
+    category: "Restaurante",
     title: "Sabor & Casa",
-    objetivo: "Cardápio digital e reservas",
-    resultado: "+60% de reservas online",
-    img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+    description: "Cardápio digital moderno com sistema de reservas online integrado.",
+    link: "https://wa.me/5533999888211",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjByZXN0YXVyYW50JTIwaW50ZXJpb3J8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
   {
-    tag: "Empresa de Serviços",
+    category: "Empresa de Serviços",
     title: "Clínica Bem Viver",
-    objetivo: "Agendamentos e autoridade",
-    resultado: "+35% de agendamentos pela web",
-    img: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
+    description: "Site institucional com agendamentos online para gerar autoridade e novos pacientes.",
+    link: "https://wa.me/5533999888211",
+    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbGFwdG9wJTIwc21hcnRwaG9uZSUyMG1vY2t1cCUyMGRhcmt8ZW58MHx8fHwxNzg1NjE3ODc1fDA&ixlib=rb-4.1.0&q=85",
   },
 ];
 

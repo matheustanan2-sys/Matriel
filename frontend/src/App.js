@@ -14,8 +14,6 @@ import Portfolio from "@/components/site/Portfolio";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
 import FloatingWhatsApp from "@/components/site/FloatingWhatsApp";
 import Contato from "@/components/site/Contato";
-import LoginModal from "@/components/site/LoginModal";
-import { subscribeToAuthChanges, logoutAdmin } from "@/lib/firebase";
 
 function Preloader({ done }) {
   return (
@@ -50,24 +48,6 @@ export default function App() {
   const lenisRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [started, setStarted] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  // Subscribe to auth state changes
-  useEffect(() => {
-    const localEmail = localStorage.getItem("matriel_admin_email");
-    const localToken = localStorage.getItem("matriel_admin_token");
-    if (localEmail && localToken) {
-      setUser({ email: localEmail, uid: "mock-uid-123" });
-    }
-
-    const unsubscribe = subscribeToAuthChanges((currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -118,17 +98,6 @@ export default function App() {
     if (el) lenisRef.current?.scrollTo(el, { offset: -60 });
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logoutAdmin();
-      localStorage.removeItem("matriel_admin_token");
-      localStorage.removeItem("matriel_admin_email");
-      setUser(null);
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    }
-  };
-
   return (
     <div className="App relative">
       <div className="grain-overlay" aria-hidden="true" />
@@ -137,9 +106,6 @@ export default function App() {
 
       <Header 
         onNav={handleNav} 
-        user={user} 
-        onLoginClick={() => setIsLoginOpen(true)} 
-        onLogoutClick={handleLogout} 
       />
       <FloatingWhatsApp />
       
@@ -149,17 +115,11 @@ export default function App() {
         <Sobre />
         <Servicos />
         <Beneficios />
-        <Portfolio user={user} />
+        <Portfolio />
         <OfertaEspecial />
         <ComoFunciona />
         <Contato />
       </main>
-
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onMockLogin={(mockUser) => setUser(mockUser)}
-      />
     </div>
   );
 }

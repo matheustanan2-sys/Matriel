@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Reveal } from "./motion";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Maximize2 } from "lucide-react";
 
 const FEATURES = [
   "Catálogo de produtos",
@@ -13,6 +13,7 @@ const FEATURES = [
 ];
 
 function ProjectVideo() {
+  const wrapRef = useRef(null);
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
 
@@ -28,37 +29,58 @@ function ProjectVideo() {
     }
   };
 
+  const goFullscreen = (e) => {
+    e.stopPropagation();
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen(); // iOS
+  };
+
   return (
-    <div className="relative group">
-      {/* glow */}
-      <div className="absolute -inset-4 bg-gold/10 blur-3xl rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700" aria-hidden="true" />
-      <div className="relative rounded-3xl overflow-hidden border border-gold/20 bg-black shadow-2xl">
-        <video
-          ref={videoRef}
-          src="/superlanche.mp4"
-          className="w-full h-full object-cover aspect-[9/16] max-h-[640px] mx-auto"
-          playsInline
-          loop
-          preload="metadata"
-          onClick={toggle}
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          data-testid="portfolio-video"
-        />
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={playing ? "Pausar vídeo" : "Reproduzir vídeo"}
-          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-            playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-          }`}
-          data-testid="portfolio-video-toggle"
-        >
-          <span className="flex items-center justify-center h-16 w-16 rounded-full bg-gold text-ink shadow-lg transition-transform duration-300 hover:scale-105">
-            {playing ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-1" />}
-          </span>
-        </button>
-      </div>
+    <div
+      ref={wrapRef}
+      className="relative group w-full rounded-3xl overflow-hidden border border-gold/20 bg-black shadow-2xl"
+    >
+      <video
+        ref={videoRef}
+        src="/superlanche.mp4"
+        className="w-full h-[70vh] md:h-[82vh] max-h-[900px] object-contain bg-black"
+        playsInline
+        loop
+        preload="metadata"
+        onClick={toggle}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        data-testid="portfolio-video"
+      />
+
+      {/* center play/pause overlay */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? "Pausar vídeo" : "Reproduzir vídeo"}
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+          playing ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+        }`}
+        data-testid="portfolio-video-toggle"
+      >
+        <span className="flex items-center justify-center h-20 w-20 rounded-full bg-gold text-ink shadow-lg transition-transform duration-300 hover:scale-105">
+          {playing ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7 ml-1" />}
+        </span>
+      </button>
+
+      {/* fullscreen button */}
+      <button
+        type="button"
+        onClick={goFullscreen}
+        aria-label="Tela cheia"
+        className="absolute top-4 right-4 flex items-center justify-center h-11 w-11 rounded-full bg-black/60 border border-gold/30 text-bone backdrop-blur hover:bg-gold hover:text-ink transition-colors"
+        data-testid="portfolio-video-fullscreen"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
     </div>
   );
 }
@@ -87,13 +109,13 @@ export default function Portfolio() {
           </div>
         </div>
 
-        {/* Featured project: Super Lancheburguer */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <Reveal>
-            <ProjectVideo />
-          </Reveal>
+        {/* Featured project: Super Lancheburguer — full-width video */}
+        <Reveal>
+          <ProjectVideo />
+        </Reveal>
 
-          <Reveal delay={0.15}>
+        <Reveal delay={0.1}>
+          <div className="mt-12 md:mt-16 grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16">
             <div>
               <p className="text-xs uppercase tracking-[0.28em] text-gold mb-5 flex items-center gap-3">
                 <span className="h-px w-8 bg-gold/60" /> Site de Pedidos
@@ -101,8 +123,7 @@ export default function Portfolio() {
               <h3 className="font-heading text-3xl md:text-4xl font-semibold tracking-tight text-bone mb-6">
                 Super Lancheburguer
               </h3>
-
-              <div className="space-y-5 text-ash leading-relaxed max-w-xl">
+              <div className="space-y-5 text-ash leading-relaxed">
                 <p>
                   Layout desenvolvido para uma hamburgueria moderna, com foco em apresentar os
                   produtos de forma visual e facilitar o processo de compra.
@@ -117,25 +138,25 @@ export default function Portfolio() {
                   aparência moderna, sofisticada e alinhada ao conceito de uma hamburgueria premium.
                 </p>
               </div>
+            </div>
 
-              <div className="mt-8">
-                <p className="text-xs uppercase tracking-[0.24em] text-bone/70 mb-4">
-                  Funcionalidades
-                </p>
-                <div className="flex flex-wrap gap-2.5">
-                  {FEATURES.map((f) => (
-                    <span
-                      key={f}
-                      className="text-sm text-bone/90 border border-gold/25 bg-gold/5 rounded-full px-4 py-1.5"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
+            <div className="lg:pt-14">
+              <p className="text-xs uppercase tracking-[0.24em] text-bone/70 mb-4">
+                Funcionalidades
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                {FEATURES.map((f) => (
+                  <span
+                    key={f}
+                    className="text-sm text-bone/90 border border-gold/25 bg-gold/5 rounded-full px-4 py-1.5"
+                  >
+                    {f}
+                  </span>
+                ))}
               </div>
             </div>
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

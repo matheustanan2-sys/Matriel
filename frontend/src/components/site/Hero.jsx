@@ -7,8 +7,6 @@ import { waLink, LOCATION } from "../../lib/site";
 export default function Hero({ started, onNav }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const imgY = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const textY = useTransform(scrollYProgress, [0, 1], [0, -60]);
 
   return (
@@ -22,7 +20,7 @@ export default function Hero({ started, onNav }) {
       <div className="pointer-events-none absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full bg-gold/10 blur-[140px]" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        <motion.div style={{ y: textY }} className="lg:col-span-7">
+        <motion.div style={{ y: textY }} className="lg:col-span-8">
           <motion.p
             initial={{ opacity: 0 }}
             animate={started ? { opacity: 1 } : {}}
@@ -86,31 +84,6 @@ export default function Hero({ started, onNav }) {
               Ver portfólio
             </button>
           </motion.div>
-        </motion.div>
-
-        {/* Mockup with parallax */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={started ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
-          className="lg:col-span-5 relative"
-        >
-          <div className="relative rounded-lg overflow-hidden border border-white/10 shadow-2xl">
-            <div className="absolute inset-0 z-10 ring-1 ring-inset ring-white/10 rounded-lg pointer-events-none" />
-            <motion.video
-              src="/superlanche.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{ y: imgY, scale: imgScale }}
-              className="w-full h-[420px] md:h-[520px] object-cover bg-black"
-            />
-          </div>
-          <div className="absolute -bottom-5 -left-5 hidden md:flex items-center gap-3 rounded-full bg-surface border border-white/10 px-5 py-3">
-            <span className="h-2 w-2 rounded-full bg-gold animate-pulse" />
-            <span className="text-sm text-bone/90">Projetos que vendem 24h por dia</span>
-          </div>
         </motion.div>
       </div>
 

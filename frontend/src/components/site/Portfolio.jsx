@@ -115,40 +115,29 @@ export default function Portfolio() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div className="mt-12 md:mt-16 grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16">
+          <div className="mt-10 md:mt-12 grid lg:grid-cols-[1fr_1fr] gap-8 lg:gap-12 items-start">
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-gold mb-5 flex items-center gap-3">
+              <p className="text-xs uppercase tracking-[0.28em] text-gold mb-3 flex items-center gap-3">
                 <span className="h-px w-8 bg-gold/60" /> Site de Pedidos
               </p>
-              <h3 className="font-heading text-3xl md:text-4xl font-semibold tracking-tight text-bone mb-6">
+              <h3 className="font-heading text-2xl md:text-3xl font-semibold tracking-tight text-bone mb-3">
                 Super Hamburguers
               </h3>
-              <div className="space-y-5 text-ash leading-relaxed">
-                <p>
-                  Layout desenvolvido para uma hamburgueria moderna, com foco em apresentar os
-                  produtos de forma visual e facilitar o processo de compra.
-                </p>
-                <p>
-                  O projeto conta com catálogo de hambúrgueres e acompanhamentos, categorias de
-                  produtos, detalhes dos itens, carrinho de compras e finalização do pedido
-                  diretamente pelo WhatsApp.
-                </p>
-                <p>
-                  O design utiliza uma identidade visual escura com detalhes dourados, criando uma
-                  aparência moderna, sofisticada e alinhada ao conceito de uma hamburgueria premium.
-                </p>
-              </div>
+              <p className="text-ash text-sm leading-relaxed max-w-md">
+                Site de pedidos para uma hamburgueria moderna: catálogo, categorias, carrinho e
+                finalização direto pelo WhatsApp, com visual escuro e detalhes dourados.
+              </p>
             </div>
 
-            <div className="lg:pt-14">
-              <p className="text-xs uppercase tracking-[0.24em] text-bone/70 mb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-bone/70 mb-3">
                 Funcionalidades
               </p>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {FEATURES.map((f) => (
                   <span
                     key={f}
-                    className="text-sm text-bone/90 border border-gold/25 bg-gold/5 rounded-full px-4 py-1.5"
+                    className="text-xs text-bone/90 border border-gold/25 bg-gold/5 rounded-full px-3 py-1"
                   >
                     {f}
                   </span>

@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, ArrowDown } from "lucide-react";
 import { MaskedLines } from "./motion";
-import { waLink, HERO_MOCKUP, LOCATION } from "../../lib/site";
+import { waLink, LOCATION } from "../../lib/site";
 
 export default function Hero({ started, onNav }) {
   const ref = useRef(null);
@@ -97,11 +97,14 @@ export default function Hero({ started, onNav }) {
         >
           <div className="relative rounded-lg overflow-hidden border border-white/10 shadow-2xl">
             <div className="absolute inset-0 z-10 ring-1 ring-inset ring-white/10 rounded-lg pointer-events-none" />
-            <motion.img
-              src={HERO_MOCKUP}
-              alt="Mockup de site profissional em notebook e celular"
+            <motion.video
+              src="/superlanche.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
               style={{ y: imgY, scale: imgScale }}
-              className="w-full h-[420px] md:h-[520px] object-cover"
+              className="w-full h-[420px] md:h-[520px] object-cover bg-black"
             />
           </div>
           <div className="absolute -bottom-5 -left-5 hidden md:flex items-center gap-3 rounded-full bg-surface border border-white/10 px-5 py-3">

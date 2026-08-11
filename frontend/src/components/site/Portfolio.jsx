@@ -121,7 +121,7 @@ export default function Portfolio() {
                 <span className="h-px w-8 bg-gold/60" /> Site de Pedidos
               </p>
               <h3 className="font-heading text-3xl md:text-4xl font-semibold tracking-tight text-bone mb-6">
-                Super Lancheburguer
+                Super Hamburguers
               </h3>
               <div className="space-y-5 text-ash leading-relaxed">
                 <p>

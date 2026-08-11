@@ -8,7 +8,6 @@ import Hero from "@/components/site/Hero";
 import EditorialMarquee from "@/components/site/EditorialMarquee";
 import Sobre from "@/components/site/Sobre";
 import Servicos from "@/components/site/Servicos";
-import ComoFunciona from "@/components/site/ComoFunciona";
 import Beneficios from "@/components/site/Beneficios";
 import Portfolio from "@/components/site/Portfolio";
 import OfertaEspecial from "@/components/site/OfertaEspecial";
@@ -117,7 +116,6 @@ export default function App() {
         <Beneficios />
         <Portfolio />
         <OfertaEspecial />
-        <ComoFunciona />
         <Contato />
       </main>
     </div>
